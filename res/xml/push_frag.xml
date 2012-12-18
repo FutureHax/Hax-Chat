@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+ <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+     android:title="title">
+     
+	<CheckBoxPreference android:key="com.t3hh4xx0r.haxchat.push_enable_other"
+		android:title="@string/preferences_general_push_enable_title"
+      	android:summary="@string/preferences_general_push_enable_summary"
+      	android:defaultValue="true" />
+	<CheckBoxPreference android:key="com.t3hh4xx0r.haxchat.push_enable_test"
+		android:title="@string/preferences_general_push_enable_test_title"
+      	android:summary="@string/preferences_general_push_enable_test_summary"
+      	android:defaultValue="false" />	   
+	<CheckBoxPreference android:key="com.t3hh4xx0r.haxchat.push_enable_updates"
+		android:title="@string/preferences_general_push_enable_updates_title"
+      	android:summary="@string/preferences_general_push_enable_updates_summary"
+      	android:defaultValue="true" />	  
+ </PreferenceScreen>

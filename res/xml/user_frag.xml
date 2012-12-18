@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+ <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+     android:title="@string/preferences_interface_homescreen_general_category">
+     
+     <EditTextPreference 
+         android:title="Change username on this device"
+         android:key="username"/>
+     
+     <Preference 
+         android:enabled="false"
+         android:title="Reset password"
+         android:key="password"/>     
+                
+ </PreferenceScreen>

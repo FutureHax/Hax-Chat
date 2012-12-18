@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.t3hh4xx0r.haxchat"
+    android:versionCode="1"
+    android:versionName="1.0" >
+
+    <uses-sdk
+        android:minSdkVersion="11"
+        android:targetSdkVersion="17" />
+
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name" >
+        <activity
+            android:name="com.t3hh4xx0r.haxchat.activities.LoginActivity"
+            android:label="@string/login"
+            android:windowSoftInputMode="adjustResize|stateVisible" >
+        </activity>
+        <activity
+            android:name="com.t3hh4xx0r.haxchat.activities.ChatMainActivity"
+            android:label="@string/title_activity_chat_main" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.t3hh4xx0r.haxchat.activities.ChatPrivateActivity"
+            android:label="@string/title_activity_chat_main" >
+        </activity>                
+        <activity
+            android:name="com.t3hh4xx0r.haxchat.preferences.Preferences"
+            android:label="@string/preferences_title" />
+        <activity
+            android:name="com.t3hh4xx0r.haxchat.preferences.SingleFragmentActivity"
+            android:label="@string/preferences_title" />
+
+        <receiver android:name="com.t3hh4xx0r.haxchat.parse.ChatReceiver" >
+            <intent-filter android:priority="420" >
+                <action android:name="com.t3hh4xx0r.haxchat.ACTION_CHAT_SENT" />
+            </intent-filter>
+        </receiver>
+
+        <service android:name="com.parse.PushService" />
+
+        <activity
+            android:name="com.t3hh4xx0r.haxchat.activities.UserListActivity"
+            android:label="@string/title_user_list" >
+        </activity>
+        <activity
+            android:name="com.t3hh4xx0r.haxchat.activities.UserDetailActivity"
+            android:label="@string/title_user_detail"
+            android:parentActivityName=".activities.UserListActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".UserListActivity" />
+        </activity>
+    </application>
+
+</manifest>
