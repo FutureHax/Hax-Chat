@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
@@ -27,11 +28,12 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
+import com.parse.FindCallback;
+import com.parse.ParseObject;
 import com.parse.ParsePush;
 import com.parse.ParseUser;
 import com.parse.PushService;
@@ -226,7 +228,15 @@ public class ChatMainActivity extends SherlockActivity {
         
         user = ParseUser.getCurrentUser();
         try {
-        	this.setTitle(user.getUsername());
+        	ParseHelper.getDeviceNick(user, this, new FindCallback() {						
+    			@Override
+    			public void done(List<ParseObject> r, com.parse.ParseException e) {
+    				if (e == null && r.size() == 1) {
+    					ParseObject device = r.get(0);
+    					ChatMainActivity.this.setTitle(device.getString("DeviceNick"));
+    				}
+    			}						
+    		}, false);	
         } catch (Exception e) {
         	
         }
@@ -246,7 +256,15 @@ public class ChatMainActivity extends SherlockActivity {
 	        case 0:
 	            if (aResultCode == Activity.RESULT_OK) {
 	            	user = ParseUser.getCurrentUser();
-	        		this.setTitle(user.getUsername());
+	            	ParseHelper.getDeviceNick(user, this, new FindCallback() {						
+	        			@Override
+	        			public void done(List<ParseObject> r, com.parse.ParseException e) {
+	        				if (e == null && r.size() == 1) {
+	        					ParseObject device = r.get(0);
+	        					ChatMainActivity.this.setTitle(device.getString("DeviceNick"));
+	        				}
+	        			}						
+	        		}, false);	
 	            	if (user == null) {
 	        			Intent i = new Intent(this, LoginActivity.class);
 	        			startActivityForResult(i, 0);

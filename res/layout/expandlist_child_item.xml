@@ -1,0 +1,9 @@
+<TextView xmlns:android="http://schemas.android.com/apk/res/android" 
+    android:id="@+id/tvChild" 
+    android:layout_width="fill_parent" 
+    android:layout_height="wrap_content" 
+    android:textAppearance="?android:attr/textAppearanceMedium" 
+    android:gravity="center_vertical" 
+    android:paddingLeft="20dip" 
+    android:textColor="@android:color/white"
+    android:minHeight="?android:attr/listPreferredItemHeight"/>

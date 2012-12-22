@@ -104,9 +104,7 @@ public class DBAdapter {
 		mCursor.moveToFirst();
 		String fString = mCursor.getString(mCursor.getColumnIndex("friends"));
 		String[] list = fString.split(",");
-		Log.d("WTF MAN", fString);
 		for (int i=0;i<list.length;i++) {
-			Log.d("WTF MAN", list[i]);
 			res.add(list[i]);
 		}
 		return res;

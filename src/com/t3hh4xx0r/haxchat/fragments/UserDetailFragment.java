@@ -113,7 +113,6 @@ public class UserDetailFragment extends Fragment {
 				            try {
 								ChatMainActivity.sendPrivateMessage(value, Long.toString(System.currentTimeMillis()), getArguments().getString(
 										ARG_ITEM_ID));
-					            Toast.makeText(v.getContext(), value, Toast.LENGTH_SHORT).show();
 							} catch (JSONException e) {
 								Toast.makeText(v.getContext(), "FAIL", Toast.LENGTH_SHORT).show();
 								e.printStackTrace();
@@ -135,6 +134,7 @@ public class UserDetailFragment extends Fragment {
 			@Override
 			public void onClick(final View v) {
 				ParseHelper.addUserFriend(detailedUser, v.getContext());
+				friendButton.setVisibility(View.GONE);
 			}
 		});
 
@@ -142,10 +142,11 @@ public class UserDetailFragment extends Fragment {
 	}
 	
 	public void updateUI() {
+		friendButton.setVisibility(ParseHelper.isUserAFriend(detailedUser, getActivity()) ? View.GONE : View.VISIBLE);
 		RelativeLayout mask = (RelativeLayout) rootView.findViewById(R.id.loading_mask);
 		mask.setVisibility(View.GONE);
 		((TextView) rootView.findViewById(R.id.user_name)).setText(detailedUser.getUsername());
-		String s = "Last Active : " + detailedUser.get("lastActive").toString();
+		String s = (detailedUser.get("lastActive") != null) ? "Last Active : " + detailedUser.get("lastActive").toString() : "Last Active : Never";
 		((TextView) rootView.findViewById(R.id.last_active)).setText(s);
 	}
 }

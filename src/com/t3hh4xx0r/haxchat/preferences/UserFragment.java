@@ -15,10 +15,12 @@ import android.widget.Toast;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
+import com.parse.ParseQuery;
 import com.parse.ParseRelation;
 import com.parse.ParseUser;
 import com.parse.RequestPasswordResetCallback;
 import com.t3hh4xx0r.haxchat.R;
+import com.t3hh4xx0r.haxchat.parse.ParseHelper;
 
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class UserFragment extends PreferenceFragment implements OnPreferenceChangeListener {
@@ -39,7 +41,15 @@ public class UserFragment extends PreferenceFragment implements OnPreferenceChan
         
         prefs = getPreferenceScreen();
         userNamePref = prefs.findPreference("username");
-        userNamePref.setSummary(ParseUser.getCurrentUser().getUsername());
+        ParseHelper.getDeviceNick(u, getActivity(), new FindCallback() {						
+			@Override
+			public void done(List<ParseObject> r, ParseException e) {
+				if (e == null && r.size() == 1) {
+					ParseObject device = r.get(0);
+					userNamePref.setSummary(device.getString("DeviceNick"));
+				}
+			}
+		}, false);		
         userNamePref.setOnPreferenceChangeListener(this);
 
         passwordPref = prefs.findPreference("password");
@@ -68,9 +78,7 @@ public class UserFragment extends PreferenceFragment implements OnPreferenceChan
 	public boolean onPreferenceChange(Preference p, final Object v) {
 		String key = p.getKey();
 		if (key.equals("username")) {
-			final ParseRelation device = u.getRelation("DeviceList");
-			device.getQuery().whereEqualTo("DeviceID", PreferencesProvider.id(p.getContext())).findInBackground(
-					new FindCallback() {						
+			ParseHelper.getDeviceNick(u, getActivity(), new FindCallback() {						
 						@Override
 						public void done(List<ParseObject> r, ParseException e) {
 							if (e == null && r.size() == 1) {
@@ -81,7 +89,7 @@ public class UserFragment extends PreferenceFragment implements OnPreferenceChan
 								userNamePref.setSummary(v.toString());
 							}
 						}
-					});
+					}, true);
 		}
         return true;
     }
