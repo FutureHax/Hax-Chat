@@ -22,6 +22,7 @@ import android.content.IntentFilter;
 import android.database.Cursor;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
@@ -159,6 +160,7 @@ public class ChatMainActivity extends SherlockActivity {
 	public BroadcastReceiver LocalChatReceiver  = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context c, Intent i) {		
+			Log.d("SHOULD UPDATE PUBLIC UI NOW", "LETS SEE");
 			Bundle b = i.getExtras();
 			String message = b.getString("message");
 			String time = convertRawTime(Long.parseLong(b.getString("time")));
@@ -188,7 +190,7 @@ public class ChatMainActivity extends SherlockActivity {
     			public void done(List<ParseObject> r, com.parse.ParseException e) {
     				if (e == null && r.size() == 1) {
     					ParseObject device = r.get(0);
-    					ChatMainActivity.this.setTitle(device.getString("DeviceNick"));
+    					ChatMainActivity.this.setTitle("Public Chat - "+device.getString("DeviceNick"));
     				}
     			}						
     		}, false);	
@@ -216,7 +218,7 @@ public class ChatMainActivity extends SherlockActivity {
 	        			public void done(List<ParseObject> r, com.parse.ParseException e) {
 	        				if (e == null) {	        				
 	        					ParseObject device = r.get(0);
-	        					ChatMainActivity.this.setTitle(device.getString("DeviceNick"));
+	        					ChatMainActivity.this.setTitle("Public Chat - "+device.getString("DeviceNick"));
 	        				} else {
 	        					e.printStackTrace();
 	        				}

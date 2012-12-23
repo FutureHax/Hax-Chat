@@ -22,6 +22,7 @@ import android.content.IntentFilter;
 import android.database.Cursor;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
@@ -44,13 +45,12 @@ import com.t3hh4xx0r.haxchat.parse.ParseHelper;
 import com.t3hh4xx0r.haxchat.preferences.Preferences;
 
 public class ChatPrivateActivity extends SherlockActivity {
-	ParseUser user;
+	ParseUser currentUser;
+	String chattingUserNick;
+	String currentUserNick;
 	ListView lv1;
 	Button send;
 	EditText input;
-	
-	static final String ACTION_CHAT = "com.t3hh4xx0r.haxchat.ACTION_CHAT_SENT";
-	static final String ACTION_CHAT_UPDATE = "com.t3hh4xx0r.haxchat.ACTION_CHAT_SENT_UPDATE";
 	int chatCount = 0;
 
 	ArrayAdapter<String> a;
@@ -62,21 +62,26 @@ public class ChatPrivateActivity extends SherlockActivity {
 		setContentView(R.layout.activity_chat_main);
 		
 		ParseHelper.init(this);
-		
+		currentUser = ParseUser.getCurrentUser();
+
+		ParseHelper.getDeviceNick(currentUser, this, new FindCallback() {			
+			@Override
+			public void done(List<ParseObject> r, com.parse.ParseException e) {
+				if (e == null) {
+					currentUserNick = r.get(0).getString("DeviceNick");
+				}
+			}
+		}, false);
 		ActionBar bar = getActionBar();
 		bar.setDisplayHomeAsUpEnabled(true);
 		bar.setBackgroundDrawable(new ColorDrawable(android.R.color.background_dark));
 		
-		user = ParseUser.getCurrentUser();
-		if (user == null) {
-			Intent i = new Intent(this, LoginActivity.class);
-			startActivityForResult(i, 0);
-		} 
-		
+				
 	    lv1 = (ListView) findViewById(R.id.display_list);  
 	    lv1.setTranscriptMode(ListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
 	    lv1.setStackFromBottom(true);	    
-	    chatList = getChatListFromUser(this, getIntent().getStringExtra("user"));
+	    chattingUserNick = getIntent().getStringExtra("user");
+	    chatList = getChatListFromUser(this, chattingUserNick);
 	    a = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, chatList);
 	    lv1.setAdapter(a);
 	    
@@ -85,15 +90,30 @@ public class ChatPrivateActivity extends SherlockActivity {
 	    send.setOnClickListener(new OnClickListener(){
 			@Override
 			public void onClick(View v) {
-				try {
-					sendPrivateMessage(input.getText().toString(), Long.toString(System.currentTimeMillis()), getIntent().getStringExtra("user"));
-//					sendMessage(input.getText().toString(), Long.toString(System.currentTimeMillis()));
-				} catch (JSONException e) {
-					e.printStackTrace();
-				}
+				ParseHelper.sendPrivateMessage(input.getText().toString(), Long.toString(System.currentTimeMillis()), getIntent().getStringExtra("user"), v.getContext());
+				StringBuilder sB = new StringBuilder();
+				sB.append(convertRawTime(System.currentTimeMillis()));
+				sB.append(":");
+				sB.append(getIntent().getStringExtra("user"));
+				sB.append(" - ");
+				sB.append(input.getText().toString());
+				chatList.add(sB.toString());
+				a.notifyDataSetChanged();
+				DBAdapter db = new DBAdapter(v.getContext());
+				db.open();
+				db.insertChatMessage(currentUserNick, input.getText().toString(), Long.toString(System.currentTimeMillis()), "private");
+				db.close();					
 				input.setText("");
+				
 			}	    	
 	    });
+	    
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(ParseHelper.ACTION_CHAT_UPDATE);
+        registerReceiver(LocalChatReceiver, filter);
+        
+        currentUser = ParseUser.getCurrentUser();
+		ChatPrivateActivity.this.setTitle("Private Chat - "+chattingUserNick);
 	}
 
 	@Override
@@ -107,7 +127,7 @@ public class ChatPrivateActivity extends SherlockActivity {
 		switch (item.getItemId()) {
 			case R.id.menu_sign_out:
 				ParseUser.logOut();
-				user = null;
+				currentUser = null;
 				Object[] list = PushService.getSubscriptions(this).toArray();
 				for (int i=0;i<list.length;i++) {
 					if (!list[i].equals("Broadcast") &&
@@ -158,51 +178,10 @@ public class ChatPrivateActivity extends SherlockActivity {
 		 return res;
 	}
 	
-	public void sendMessage(String message, String time) throws JSONException {
-		JSONObject data = new JSONObject("{\"action\": \""+ACTION_CHAT+"\"," +
-				"\"sender\": \""+user.getUsername()+"\"," +
-				"\"time\": \""+time+"\"," +
-				"\"type\": \"public\"," +
-				"\"message\": \""+message+"\"" +
-				"}");
-		
-        ParsePush push = new ParsePush();
-        push.setChannel("chat");
-        push.setData(data);	
-        push.sendInBackground();
-        
-        try {
-        	Map<String, Object> opts = new HashMap<String, Object>();
-        	opts.put("lastActive", getDateInGMT());
-			ParseHelper.updateUser(opts);
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	private Date getDateInGMT() throws ParseException {
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
-		return (Date) sdf.parse(sdf.format(new Date()));
-	}
-
-	public static void sendPrivateMessage(String message, String time, String user) throws JSONException {
-		JSONObject data = new JSONObject("{\"action\": \""+ACTION_CHAT+"\"," +
-				"\"sender\": \""+ParseUser.getCurrentUser().getUsername()+"\"," +
-				"\"time\": \""+time+"\"," +
-				"\"type\": \"private\"," +
-				"\"message\": \""+message+"\"" +
-				"}");
-
-        ParsePush push = new ParsePush();
-        push.setChannel("chat_"+user);
-        push.setData(data);	
-        push.sendInBackground();
-	}
-	
 	public BroadcastReceiver LocalChatReceiver  = new BroadcastReceiver() {
 		@Override
-		public void onReceive(Context c, Intent i) {		
+		public void onReceive(Context c, Intent i) {	
+			Log.d("SHOULD UPDATE PTIVATE UI NOW", "LETS SEE");
 			Bundle b = i.getExtras();
 			String message = b.getString("message");
 			String time = convertRawTime(Long.parseLong(b.getString("time")));
@@ -222,23 +201,12 @@ public class ChatPrivateActivity extends SherlockActivity {
     @Override
     protected void onResume() {
         IntentFilter filter = new IntentFilter();
-        filter.addAction(ACTION_CHAT_UPDATE);
+        filter.addAction(ParseHelper.ACTION_CHAT_UPDATE);
         registerReceiver(LocalChatReceiver, filter);
         
-        user = ParseUser.getCurrentUser();
-        try {
-        	ParseHelper.getDeviceNick(user, this, new FindCallback() {						
-    			@Override
-    			public void done(List<ParseObject> r, com.parse.ParseException e) {
-    				if (e == null && r.size() == 1) {
-    					ParseObject device = r.get(0);
-    					ChatPrivateActivity.this.setTitle(device.getString("DeviceNick"));
-    				}
-    			}						
-    		}, false);	
-        } catch (Exception e) {
-        	
-        }
+        currentUser = ParseUser.getCurrentUser();
+		ChatPrivateActivity.this.setTitle("Private Chat - "+chattingUserNick);
+
         super.onResume();
     }
 
@@ -254,17 +222,9 @@ public class ChatPrivateActivity extends SherlockActivity {
 	    switch (aRequestCode) {
 	        case 0:
 	            if (aResultCode == Activity.RESULT_OK) {
-	            	user = ParseUser.getCurrentUser();
-	            	ParseHelper.getDeviceNick(user, this, new FindCallback() {						
-	        			@Override
-	        			public void done(List<ParseObject> r, com.parse.ParseException e) {
-	        				if (e == null && r.size() == 1) {
-	        					ParseObject device = r.get(0);
-	        					ChatPrivateActivity.this.setTitle(device.getString("DeviceNick"));
-	        				}
-	        			}						
-	        		}, false);	
-	            	if (user == null) {
+	            	currentUser = ParseUser.getCurrentUser();
+					ChatPrivateActivity.this.setTitle("Private Chat - "+chattingUserNick);
+	            	if (currentUser == null) {
 	        			Intent i = new Intent(this, LoginActivity.class);
 	        			startActivityForResult(i, 0);
 	        		} 

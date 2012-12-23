@@ -1,5 +1,7 @@
 package com.t3hh4xx0r.haxchat.parse;
 
+import java.util.List;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -12,26 +14,32 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 
+import com.parse.FindCallback;
+import com.parse.ParseException;
+import com.parse.ParseObject;
 import com.parse.ParseUser;
 import com.t3hh4xx0r.haxchat.DBAdapter;
 import com.t3hh4xx0r.haxchat.R;
 import com.t3hh4xx0r.haxchat.activities.ChatMainActivity;
+import com.t3hh4xx0r.haxchat.activities.ChatPrivateActivity;
 
 public class ChatReceiver extends BroadcastReceiver {
-	String ACTION_CHAT_UPDATE = "com.t3hh4xx0r.haxchat.ACTION_CHAT_SENT_UPDATE";
 
 	@Override
-	public void onReceive(Context c, Intent i) {	
+	public void onReceive(final Context c, Intent i) {	
+		  Log.d("JUST SENT UPDATE CAL:", "SENT");
+
 		if (i.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
 			ParseHelper.init(c);
 			ParseHelper.registerForPush(c);
 		} else {
-			ParseUser user = ParseUser.getCurrentUser();
+			final ParseUser user = ParseUser.getCurrentUser();
 			String message = null;
-			String sender;
+			final String sender;
 			String time;		 
-			String type;		 
+			final String type;		 
 			 try {
 			      JSONObject json = new JSONObject(i.getExtras().getString("com.parse.Data"));
 			      message = json.getString("message");
@@ -44,25 +52,38 @@ public class ChatReceiver extends BroadcastReceiver {
 				  db.close();	
 				  
 				  Intent intent = new Intent();
-				  intent.setAction(ACTION_CHAT_UPDATE);
-				  Bundle b = new Bundle();
+				  intent.setAction(ParseHelper.ACTION_CHAT_UPDATE);
+				  final Bundle b = new Bundle();
 				  b.putString("message", message);
 				  b.putString("sender", sender);
 				  b.putString("time", time);
 				  intent.putExtras(b);
 				  c.sendOrderedBroadcast(intent, null);
-				 
-				  if (!sender.equals(user.getUsername())) {
-					  if (Integer.valueOf(android.os.Build.VERSION.SDK_INT) >= 16) {
-						  if (type.equals("private")) {
-							notifyPrivateJellyBean(b, c);
-						  } else {
-							notifyJellyBean(b, c);
-						  }
+				  ParseHelper.getDeviceNick(user, c, new FindCallback() {
+					@Override
+					public void done(List<ParseObject> r, ParseException e) {						
+						if (e == null) {
+							if (!sender.equals(r.get(0).get("DeviceNick"))) {
+								if (type.equals("private")) {
+									if (Integer.valueOf(android.os.Build.VERSION.SDK_INT) >= 16) {
+										notifyPrivateJellyBean(b, c);
+									} else {
+										notifyPrivatePreJellyBean(b, c);
+									}
+								} else {
+									if (Integer.valueOf(android.os.Build.VERSION.SDK_INT) >= 16) {
+										notifyJellyBean(b, c);
+									} else {
+										notifyPreJellyBean(b, c);
+									}
+								}
+							}
 						} else {
-							notifyPreJellyBean(b, c);
+							e.printStackTrace();
 						}
-				  }
+					}
+				}, false);
+				  
 			    } catch (JSONException e) {
 			    	e.printStackTrace();
 			    }
@@ -79,9 +100,36 @@ public class ChatReceiver extends BroadcastReceiver {
 		CharSequence contentTitle = "New message from "+ sender; 
 		Intent notificationIntent = new Intent(c, ChatMainActivity.class);
 		PendingIntent contentIntent = PendingIntent.getActivity(c, 0, notificationIntent, 0);
-		Notification notification = new Notification(icon, "New VIP Message!", when);
- 	    notification.defaults = Notification.DEFAULT_VIBRATE;
- 	    notification.flags = Notification.FLAG_AUTO_CANCEL;
+		Notification notification = new Notification(icon, "New Message!", when);
+		notification.defaults |= Notification.DEFAULT_VIBRATE | 
+	    		Notification.DEFAULT_LIGHTS |
+	    		Notification.DEFAULT_SOUND;
+		notification.flags = Notification.FLAG_AUTO_CANCEL;
+		notification.setLatestEventInfo(c, contentTitle, message, contentIntent);
+		final int HELLO_ID = 1;
+		NotificationManager mNotificationManager = (NotificationManager) c.getSystemService(
+	                Context.NOTIFICATION_SERVICE);	
+		mNotificationManager.notify(HELLO_ID, notification);			
+	}
+	
+	private void notifyPrivatePreJellyBean(Bundle b, Context c) {
+		String message = b.getString("message");
+		String time = b.getString("time");
+		String sender = b.getString("sender");
+		
+		int icon = R.drawable.ic_launcher;
+		long when = System.currentTimeMillis();
+		CharSequence contentTitle = "New private message from "+ sender; 
+		Intent notificationIntent = new Intent(c, ChatPrivateActivity.class);
+		Bundle chatBundle = new Bundle();
+		chatBundle.putString("user", sender);
+		notificationIntent.putExtras(chatBundle);
+		PendingIntent contentIntent = PendingIntent.getActivity(c, 0, notificationIntent, 0);
+		Notification notification = new Notification(icon, "New Message!", when);
+		notification.defaults |= Notification.DEFAULT_VIBRATE | 
+	    		Notification.DEFAULT_LIGHTS |
+	    		Notification.DEFAULT_SOUND;
+	    notification.flags = Notification.FLAG_AUTO_CANCEL;
 		notification.setLatestEventInfo(c, contentTitle, message, contentIntent);
 		final int HELLO_ID = 1;
 		NotificationManager mNotificationManager = (NotificationManager) c.getSystemService(
@@ -102,7 +150,7 @@ public class ChatReceiver extends BroadcastReceiver {
 		    Intent notiIntent = new Intent(c, ChatMainActivity.class);
 			PendingIntent pIntent = PendingIntent.getActivity(c, 0, notiIntent, 0);
 			Notification noti = new Notification.Builder(c)
-			        .setContentTitle("new message")
+			        .setContentTitle("New message from "+ sender)
 			        .setContentText(messageShort)
 			        .setSmallIcon(R.drawable.ic_launcher)
 			        .setContentIntent(pIntent)		        
@@ -122,7 +170,7 @@ public class ChatReceiver extends BroadcastReceiver {
 	  
 	  @TargetApi(16)
 	  private void notifyPrivateJellyBean(Bundle b, Context c) {
-			String message = b.getString("message");
+		  String message = b.getString("message");
 			String messageShort = null;
 			if (message.length() > 25) {
 				messageShort = b.getString("message").substring(0, 24);
@@ -149,12 +197,12 @@ public class ChatReceiver extends BroadcastReceiver {
 
 			
 			Notification noti = new Notification.Builder(c)
-			        .setContentTitle("new message")
+			        .setContentTitle("New private message from "+ sender)
 			        .setContentText(messageShort)
 			        .setSmallIcon(R.drawable.ic_launcher)
 			        .setContentIntent(pIntent)		        
 //			        .addAction(R.drawable.ic_unsub, "Unsubscribe", pUnSubIntent)
-			        .addAction(R.drawable.ic_reply, "Reply", pSendIntent)
+//			        .addAction(R.drawable.ic_reply, "Reply", pSendIntent)
 			        .setStyle(new Notification.BigTextStyle().bigText(message)).build();
 			    
 			  

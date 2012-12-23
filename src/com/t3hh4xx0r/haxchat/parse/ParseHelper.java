@@ -163,7 +163,7 @@ public 	class ParseHelper {
 		userQuery.findInBackground(cb);
 	}
 	
-	public static void sendPrivateMessage(final String message, final String time, String user, Context c) {
+	public static void sendPrivateMessage(final String message, final String time, final String user, Context c) {
 		ParseHelper.getDeviceNick(ParseUser.getCurrentUser(), c, new FindCallback() {
 			@Override
 			public void done(List<ParseObject> r, com.parse.ParseException e) {
@@ -180,7 +180,7 @@ public 	class ParseHelper {
 							"\"message\": \""+message+"\"" +
 							"}");
 					ParsePush push = new ParsePush();
-			        push.setChannel("chat_"+ParseUser.getCurrentUser().getUsername());
+			        push.setChannel("chat_"+user);
 			        push.setData(data);	
 			        push.sendInBackground();
 				} catch (JSONException e1) {
