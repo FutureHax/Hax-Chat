@@ -1,5 +1,6 @@
 package com.t3hh4xx0r.haxchat.fragments;
 
+import java.text.DateFormat;
 import java.util.List;
 
 import org.json.JSONException;
@@ -19,6 +20,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.parse.FindCallback;
+import com.parse.GetDataCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseUser;
@@ -110,13 +112,7 @@ public class UserDetailFragment extends Fragment {
 				    alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 				        public void onClick(DialogInterface dialog, int whichButton) {
 				            String value = input.getText().toString().trim();
-				            try {
-								ChatMainActivity.sendPrivateMessage(value, Long.toString(System.currentTimeMillis()), getArguments().getString(
-										ARG_ITEM_ID));
-							} catch (JSONException e) {
-								Toast.makeText(v.getContext(), "FAIL", Toast.LENGTH_SHORT).show();
-								e.printStackTrace();
-							}
+				            ParseHelper.sendPrivateMessage(value, Long.toString(System.currentTimeMillis()), detailedUser.getUsername(), alert.getContext());
 				        }
 				    });
 
@@ -146,7 +142,13 @@ public class UserDetailFragment extends Fragment {
 		RelativeLayout mask = (RelativeLayout) rootView.findViewById(R.id.loading_mask);
 		mask.setVisibility(View.GONE);
 		((TextView) rootView.findViewById(R.id.user_name)).setText(detailedUser.getUsername());
-		String s = (detailedUser.get("lastActive") != null) ? "Last Active : " + detailedUser.get("lastActive").toString() : "Last Active : Never";
-		((TextView) rootView.findViewById(R.id.last_active)).setText(s);
+		try {
+			String dateString = detailedUser.get("lastActive").toString();
+			String lastActive = "Last Active : " + dateString;
+			((TextView) rootView.findViewById(R.id.last_active)).setText(lastActive);
+		} catch (Exception e) {
+			e.printStackTrace();
+			((TextView) rootView.findViewById(R.id.last_active)).setText("Last Active : Never");
+		}
 	}
 }

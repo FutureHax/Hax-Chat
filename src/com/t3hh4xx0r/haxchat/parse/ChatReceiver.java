@@ -23,45 +23,50 @@ public class ChatReceiver extends BroadcastReceiver {
 
 	@Override
 	public void onReceive(Context c, Intent i) {	
-		ParseUser user = ParseUser.getCurrentUser();
-		String message = null;
-		String sender;
-		String time;		 
-		String type;		 
-		 try {
-		      JSONObject json = new JSONObject(i.getExtras().getString("com.parse.Data"));
-		      message = json.getString("message");
-		      time = json.getString("time");
-		      type = json.getString("type");
-		      sender = json.getString("sender");
-		      DBAdapter db = new DBAdapter(c);
-			  db.open();
-			  db.insertChatMessage(sender, message, time, type);
-			  db.close();	
-			  
-			  Intent intent = new Intent();
-			  intent.setAction(ACTION_CHAT_UPDATE);
-			  Bundle b = new Bundle();
-			  b.putString("message", message);
-			  b.putString("sender", sender);
-			  b.putString("time", time);
-			  intent.putExtras(b);
-			  c.sendOrderedBroadcast(intent, null);
-			 
-			  if (!sender.equals(user.getUsername())) {
-				  if (Integer.valueOf(android.os.Build.VERSION.SDK_INT) >= 16) {
-					  if (type.equals("private")) {
-						notifyPrivateJellyBean(b, c);
-					  } else {
-						notifyJellyBean(b, c);
-					  }
-					} else {
-						notifyPreJellyBean(b, c);
-					}
-			  }
-		    } catch (JSONException e) {
-		    	e.printStackTrace();
-		    }
+		if (i.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
+			ParseHelper.init(c);
+			ParseHelper.registerForPush(c);
+		} else {
+			ParseUser user = ParseUser.getCurrentUser();
+			String message = null;
+			String sender;
+			String time;		 
+			String type;		 
+			 try {
+			      JSONObject json = new JSONObject(i.getExtras().getString("com.parse.Data"));
+			      message = json.getString("message");
+			      time = json.getString("time");
+			      type = json.getString("type");
+			      sender = json.getString("sender");
+			      DBAdapter db = new DBAdapter(c);
+				  db.open();
+				  db.insertChatMessage(sender, message, time, type);
+				  db.close();	
+				  
+				  Intent intent = new Intent();
+				  intent.setAction(ACTION_CHAT_UPDATE);
+				  Bundle b = new Bundle();
+				  b.putString("message", message);
+				  b.putString("sender", sender);
+				  b.putString("time", time);
+				  intent.putExtras(b);
+				  c.sendOrderedBroadcast(intent, null);
+				 
+				  if (!sender.equals(user.getUsername())) {
+					  if (Integer.valueOf(android.os.Build.VERSION.SDK_INT) >= 16) {
+						  if (type.equals("private")) {
+							notifyPrivateJellyBean(b, c);
+						  } else {
+							notifyJellyBean(b, c);
+						  }
+						} else {
+							notifyPreJellyBean(b, c);
+						}
+				  }
+			    } catch (JSONException e) {
+			    	e.printStackTrace();
+			    }
+		}
 	}
 
 	private void notifyPreJellyBean(Bundle b, Context c) {

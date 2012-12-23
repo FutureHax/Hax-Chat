@@ -49,8 +49,7 @@ public class ChatMainActivity extends SherlockActivity {
 	Button send;
 	EditText input;
 	
-	static final String ACTION_CHAT = "com.t3hh4xx0r.haxchat.ACTION_CHAT_SENT";
-	static final String ACTION_CHAT_UPDATE = "com.t3hh4xx0r.haxchat.ACTION_CHAT_SENT_UPDATE";
+
 	int chatCount = 0;
 
 	ArrayAdapter<String> a;
@@ -71,9 +70,7 @@ public class ChatMainActivity extends SherlockActivity {
 		if (user == null) {
 			Intent i = new Intent(this, LoginActivity.class);
 			startActivityForResult(i, 0);
-		} 
-		
-		
+		} 				
 		
 	    lv1 = (ListView) findViewById(R.id.display_list);  
 	    lv1.setTranscriptMode(ListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
@@ -88,7 +85,7 @@ public class ChatMainActivity extends SherlockActivity {
 			@Override
 			public void onClick(View v) {
 				try {
-					sendMessage(input.getText().toString(), Long.toString(System.currentTimeMillis()));
+					ParseHelper.sendMessage(input.getText().toString(), Long.toString(System.currentTimeMillis()), v.getContext());
 				} catch (JSONException e) {
 					e.printStackTrace();
 				}
@@ -159,48 +156,6 @@ public class ChatMainActivity extends SherlockActivity {
 		 return res;
 	}
 	
-	public void sendMessage(String message, String time) throws JSONException {
-		JSONObject data = new JSONObject("{\"action\": \""+ACTION_CHAT+"\"," +
-				"\"sender\": \""+user.getUsername()+"\"," +
-				"\"time\": \""+time+"\"," +
-				"\"type\": \"public\"," +
-				"\"message\": \""+message+"\"" +
-				"}");
-		
-        ParsePush push = new ParsePush();
-        push.setChannel("chat");
-        push.setData(data);	
-        push.sendInBackground();
-        
-        try {
-        	Map<String, Object> opts = new HashMap<String, Object>();
-        	opts.put("lastActive", getDateInGMT());
-			ParseHelper.updateUser(opts);
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	private Date getDateInGMT() throws ParseException {
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
-		return (Date) sdf.parse(sdf.format(new Date()));
-	}
-
-	public static void sendPrivateMessage(String message, String time, String user) throws JSONException {
-		JSONObject data = new JSONObject("{\"action\": \""+ACTION_CHAT+"\"," +
-				"\"sender\": \""+ParseUser.getCurrentUser().getUsername()+"\"," +
-				"\"time\": \""+time+"\"," +
-				"\"type\": \"private\"," +
-				"\"message\": \""+message+"\"" +
-				"}");
-
-        ParsePush push = new ParsePush();
-        push.setChannel("chat_"+user);
-        push.setData(data);	
-        push.sendInBackground();
-	}
-	
 	public BroadcastReceiver LocalChatReceiver  = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context c, Intent i) {		
@@ -223,7 +178,7 @@ public class ChatMainActivity extends SherlockActivity {
     @Override
     protected void onResume() {
         IntentFilter filter = new IntentFilter();
-        filter.addAction(ACTION_CHAT_UPDATE);
+        filter.addAction(ParseHelper.ACTION_CHAT_UPDATE);
         registerReceiver(LocalChatReceiver, filter);
         
         user = ParseUser.getCurrentUser();
@@ -259,9 +214,11 @@ public class ChatMainActivity extends SherlockActivity {
 	            	ParseHelper.getDeviceNick(user, this, new FindCallback() {						
 	        			@Override
 	        			public void done(List<ParseObject> r, com.parse.ParseException e) {
-	        				if (e == null && r.size() == 1) {
+	        				if (e == null) {	        				
 	        					ParseObject device = r.get(0);
 	        					ChatMainActivity.this.setTitle(device.getString("DeviceNick"));
+	        				} else {
+	        					e.printStackTrace();
 	        				}
 	        			}						
 	        		}, false);	

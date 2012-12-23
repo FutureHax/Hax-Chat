@@ -81,12 +81,20 @@ public class UserFragment extends PreferenceFragment implements OnPreferenceChan
 			ParseHelper.getDeviceNick(u, getActivity(), new FindCallback() {						
 						@Override
 						public void done(List<ParseObject> r, ParseException e) {
-							if (e == null && r.size() == 1) {
-								ParseObject device = r.get(0);
+							if (e == null) {
+								ParseObject device;
+								if (r.size() == 1) {								
+									device = r.get(0);
+								//} else {
+								//	device = new ParseObject("Device");
+								//}
 								device.put("DeviceNick", v.toString());
 								device.saveInBackground();
 								u.refreshInBackground(null);
 								userNamePref.setSummary(v.toString());
+								}
+							} else {
+								e.printStackTrace();
 							}
 						}
 					}, true);

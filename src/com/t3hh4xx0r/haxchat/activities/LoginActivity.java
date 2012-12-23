@@ -23,7 +23,6 @@ import com.parse.FindCallback;
 import com.parse.LogInCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
-import com.parse.ParseRelation;
 import com.parse.ParseUser;
 import com.parse.PushService;
 import com.parse.SaveCallback;
@@ -208,30 +207,60 @@ public class LoginActivity extends SherlockActivity {
 		  Intent resI = new Intent();              
 		  setResult(Activity.RESULT_OK, resI);
 		  
-		  final ParseRelation device = currentUser.getRelation("DeviceList");
-		  device.getQuery().whereEqualTo("DeviceID", PreferencesProvider.id(getApplicationContext())).findInBackground(new FindCallback() {
+		  ParseHelper.isDeviceRegistered(this, new FindCallback() {
 			  @Override
 			  public void done(List<ParseObject> r, ParseException e) {
-				if (e == null && r.isEmpty()) {
-					  final ParseObject deviceObject = new ParseObject("Device");
-					  deviceObject.put("DeviceID", PreferencesProvider.id(getApplicationContext()));
-					  deviceObject.put("DeviceNick", mUser);
-					  deviceObject.put("DeviceModel", Build.MODEL);
-					  deviceObject.saveInBackground(new SaveCallback() {
-						  @Override
-						  public void done(ParseException e) {	
-							  if (e != null) {
-								  e.printStackTrace();
-							  } else {
-								  device.add(deviceObject);
-								  currentUser.saveInBackground();
-							  }	
-						  }
-					  });
-				} 
-				finish();		  
+				  if (e == null) {
+					  Log.d("SIZE", r.size()+"");
+					  if (r.size() == 0) {
+						  ParseObject device = new ParseObject("Device");
+						  device.put("UserId", currentUser.getObjectId());
+						  device.put("DeviceID", PreferencesProvider.id(getApplicationContext()));
+						  device.put("DeviceNick", mUser);
+						  device.put("DeviceModel", Build.MODEL);
+						  device.saveInBackground(new SaveCallback() {
+							@Override
+							public void done(ParseException e) {
+								if (e == null) {
+									finish();
+								} else {
+									e.printStackTrace();
+								}
+							}							  
+						  });
+					  } else {
+						  finish();
+					  }
+				  }
 			  }
 		  });
+
+//		  final ParseRelation device = currentUser.getRelation("DeviceList");
+//		  device.getQuery().whereEqualTo("DeviceID", PreferencesProvider.id(getApplicationContext())).findInBackground(new FindCallback() {
+//			  @Override
+//			  public void done(List<ParseObject> r, ParseException e) {
+//				if (e == null && r.isEmpty()) {
+//					  final ParseObject deviceObject = new ParseObject("Device");
+//					  deviceObject.put("DeviceID", PreferencesProvider.id(getApplicationContext()));
+//					  deviceObject.put("DeviceNick", mUser);
+//					  deviceObject.put("DeviceModel", Build.MODEL);
+//					  deviceObject.saveInBackground(new SaveCallback() {
+//						  @Override
+//						  public void done(ParseException e) {	
+//							  if (e != null) {
+//								  e.printStackTrace();
+//							  } else {
+//								  device.add(deviceObject);
+//								  currentUser.saveInBackground();
+//							  }	
+//						  }
+//					  });
+//				} else if (e != null) {
+//					e.printStackTrace();
+//				}
+//				finish();		  
+//			  }
+//		  });
 
 		} else {
 	    	mPasswordView.setText("");		
