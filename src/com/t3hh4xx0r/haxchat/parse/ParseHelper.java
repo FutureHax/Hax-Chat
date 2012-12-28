@@ -11,8 +11,9 @@ import java.util.TimeZone;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.Activity;
 import android.content.Context;
-import android.os.StrictMode;
+import android.content.Intent;
 import android.widget.Toast;
 
 import com.parse.FindCallback;
@@ -21,14 +22,13 @@ import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParsePush;
 import com.parse.ParseQuery;
-import com.parse.ParseQuery.CachePolicy;
-import com.parse.ParseRelation;
 import com.parse.ParseUser;
 import com.parse.PushService;
 import com.parse.RefreshCallback;
 import com.parse.SaveCallback;
 import com.t3hh4xx0r.haxchat.DBAdapter;
 import com.t3hh4xx0r.haxchat.activities.ChatMainActivity;
+import com.t3hh4xx0r.haxchat.activities.ChatPrivateActivity;
 import com.t3hh4xx0r.haxchat.activities.LoginActivity;
 import com.t3hh4xx0r.haxchat.preferences.PreferencesProvider;
 
@@ -39,11 +39,12 @@ public 	class ParseHelper {
 	
 	public static void init(Context c) {
 		Parse.initialize(c.getApplicationContext(), "ymsMlq604RSXbAZN3oQ50yyOpiELU7cNgudtzA15", "a9mDZkyzc9hv8VXR2knAstlmIhNEZOyO2sfqiczK"); 
-		PushService.subscribe(c.getApplicationContext(), "chat", ChatMainActivity.class);
-		PushService.subscribe(c.getApplicationContext(), "", ChatMainActivity.class);
+		registerForPush(c);
 	}
 
 	public static void registerForPush(Context c) {
+		PushService.subscribe(c.getApplicationContext(), "chat", ChatMainActivity.class);
+
 		if (PreferencesProvider.Push.getPushChannels(c)[0]) {
 			PushService.subscribe(c.getApplicationContext(), "", LoginActivity.class);
 		} else {
@@ -62,7 +63,12 @@ public 	class ParseHelper {
     		PushService.subscribe(c.getApplicationContext(), "updates", LoginActivity.class);
 		} else {
 			PushService.unsubscribe(c.getApplicationContext(), "updates");
-		}			
+		}		
+		
+		if (ParseUser.getCurrentUser() !=null &&
+				ParseUser.getCurrentUser().getUsername() !=null) {
+			subscribePrivateChat(c);
+		}
 	}	
 	
 	public void updateLastActive(ParseUser u, long time) {
@@ -223,6 +229,14 @@ public 	class ParseHelper {
 				}
 			}
 		}, false);
+		
+		try {
+			Map<String, Object> opts = new HashMap<String, Object>();
+	    	opts.put("lastActive", getDateInGMT());
+	    	updateUser(opts);
+		} catch (java.text.ParseException e) {
+			e.printStackTrace();
+		}
 	}
 		
 	private static Date getDateInGMT() throws java.text.ParseException {
@@ -234,6 +248,53 @@ public 	class ParseHelper {
 	public static void isDeviceRegistered(Context c, FindCallback cb) {
 		ParseQuery q = new ParseQuery("Device");
 		q.whereEqualTo("DeviceID", PreferencesProvider.id(c));
+		q.whereEqualTo("UserId", ParseUser.getCurrentUser().getObjectId());
+		q.findInBackground(cb);
+	}
+
+	public static void subscribePrivateChat(Context c) {
+		  PushService.subscribe(c, "chat_"+ParseUser.getCurrentUser().getUsername(), ChatPrivateActivity.class);		
+	}
+
+	public static void doLogoutSequence(ChatMainActivity mainAct, ChatPrivateActivity privateAct) {
+		if (privateAct == null) {
+			ParseUser.logOut();
+			mainAct.user = null;
+			Object[] list = PushService.getSubscriptions(mainAct).toArray();
+			for (int i=0;i<list.length;i++) {
+				if (!list[i].equals("Broadcast") &&
+						!list[i].equals("testing") &&
+						!list[i].equals("updates")) {
+					PushService.unsubscribe(mainAct, (String) list[i]);
+				}
+			}
+			DBAdapter d = new DBAdapter(mainAct).open();
+			d.dropChats();
+			d.close();
+			Intent i = new Intent(mainAct, LoginActivity.class);
+			mainAct.startActivityForResult(i, 0);		
+		} else {
+			ParseUser.logOut();
+			privateAct.currentUser = null;
+			Object[] list = PushService.getSubscriptions(privateAct).toArray();
+			for (int i=0;i<list.length;i++) {
+				if (!list[i].equals("Broadcast") &&
+						!list[i].equals("testing") &&
+						!list[i].equals("updates")) {
+					PushService.unsubscribe(privateAct, (String) list[i]);
+				}
+			}
+			DBAdapter d = new DBAdapter(privateAct).open();
+			d.dropChats();
+			d.close();
+			Intent i = new Intent(privateAct, LoginActivity.class);
+			privateAct.startActivityForResult(i, 0);		
+		}
+		
+	}
+
+	public static void getAlldeviceNicks(Context c, FindCallback cb) {
+		ParseQuery q = new ParseQuery("Device");
 		q.whereEqualTo("UserId", ParseUser.getCurrentUser().getObjectId());
 		q.findInBackground(cb);
 	}

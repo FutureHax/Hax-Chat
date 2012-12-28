@@ -38,6 +38,7 @@ import com.parse.ParseObject;
 import com.parse.ParsePush;
 import com.parse.ParseUser;
 import com.parse.PushService;
+import com.t3hh4xx0r.haxchat.ChangeLogDialog;
 import com.t3hh4xx0r.haxchat.DBAdapter;
 import com.t3hh4xx0r.haxchat.R;
 import com.t3hh4xx0r.haxchat.SlideMenu;
@@ -45,7 +46,7 @@ import com.t3hh4xx0r.haxchat.parse.ParseHelper;
 import com.t3hh4xx0r.haxchat.preferences.Preferences;
 
 public class ChatMainActivity extends SherlockActivity {
-	ParseUser user;
+	public ParseUser user;
 	ListView lv1;
 	Button send;
 	EditText input;
@@ -62,7 +63,8 @@ public class ChatMainActivity extends SherlockActivity {
 		setContentView(R.layout.activity_chat_main);
 		
 		ParseHelper.init(this);
-		
+		ChangeLogDialog.show(this);
+		setActivityTitle();
 		ActionBar bar = getActionBar();
 		bar.setDisplayHomeAsUpEnabled(true);
 		bar.setBackgroundDrawable(new ColorDrawable(android.R.color.background_dark));
@@ -105,18 +107,8 @@ public class ChatMainActivity extends SherlockActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 			case R.id.menu_sign_out:
-				ParseUser.logOut();
-				user = null;
-				Object[] list = PushService.getSubscriptions(this).toArray();
-				for (int i=0;i<list.length;i++) {
-					if (!list[i].equals("Broadcast") &&
-							!list[i].equals("testing") &&
-							!list[i].equals("updates")) {
-						PushService.unsubscribe(this, (String) list[i]);
-					}
-				}
-				Intent i = new Intent(this, LoginActivity.class);
-    			startActivityForResult(i, 0);
+				ParseHelper.doLogoutSequence(this, null);
+				
 				break;
 				
 			case R.id.menu_settings:
@@ -179,10 +171,16 @@ public class ChatMainActivity extends SherlockActivity {
 	
     @Override
     protected void onResume() {
+		ParseHelper.init(this);
+		setActivityTitle();
         IntentFilter filter = new IntentFilter();
         filter.addAction(ParseHelper.ACTION_CHAT_UPDATE);
         registerReceiver(LocalChatReceiver, filter);
-        
+
+        super.onResume();
+    }
+
+    private void setActivityTitle() {
         user = ParseUser.getCurrentUser();
         try {
         	ParseHelper.getDeviceNick(user, this, new FindCallback() {						
@@ -196,11 +194,10 @@ public class ChatMainActivity extends SherlockActivity {
     		}, false);	
         } catch (Exception e) {
         	
-        }
-        super.onResume();
-    }
+        }		
+	}
 
-    @Override
+	@Override
     protected void onPause() {
         unregisterReceiver(LocalChatReceiver);
         super.onPause();
@@ -213,17 +210,7 @@ public class ChatMainActivity extends SherlockActivity {
 	        case 0:
 	            if (aResultCode == Activity.RESULT_OK) {
 	            	user = ParseUser.getCurrentUser();
-	            	ParseHelper.getDeviceNick(user, this, new FindCallback() {						
-	        			@Override
-	        			public void done(List<ParseObject> r, com.parse.ParseException e) {
-	        				if (e == null) {	        				
-	        					ParseObject device = r.get(0);
-	        					ChatMainActivity.this.setTitle("Public Chat - "+device.getString("DeviceNick"));
-	        				} else {
-	        					e.printStackTrace();
-	        				}
-	        			}						
-	        		}, false);	
+	        		setActivityTitle();
 	            	if (user == null) {
 	        			Intent i = new Intent(this, LoginActivity.class);
 	        			startActivityForResult(i, 0);

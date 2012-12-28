@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <resources>
+    <string name="updates">-Updated Parse SDK, hopefully fixes latency issue with chats.\n-Updated profile management, includes easier device nickname management, and new avatar uploads.\n-Stability fixes for multiple bugs.\n-Updates to improve UI fluidity.\n-Improve signout function.\n-Etc...</string>
     <string name="app_name">Hax Chat</string>
     <string name="hello_world">Hello world!</string>
     <string name="login">Login</string>
@@ -14,30 +15,6 @@
     <string name="preferences_interface_title">Interface</string>
     <!-- General -->
     <string name="preferences_general_title">General</string>
-    <!-- Advanced -->
-    <string name="preferences_general_advanced_title">Advanced</string>
-    <string name="preferences_general_advanced_enable_root_title">Enable Root Permissions</string>
-    <string name="preferences_general_advanced_enable_root_summary_on">When killing applications, use the more aggressive root method.</string>
-    <string name="preferences_general_advanced_enable_root_summary_off">When killing applications, use the less aggressive, standard Android method.</string>
-    <!-- UI -->
-    <!-- Homescreen -->
-    <string name="preferences_interface_homescreen_title">Homescreen</string>
-    <string name="preferences_interface_homescreen_general_category">General</string>
-    <string name="preferences_interface_homescreen_general_search_title">Search Bar</string>
-    <string name="preferences_interface_homescreen_general_search_summary">Enable persistent search bar</string>
-    <!-- Menu -->
-    <string name="preferences_interface_menu_title">Menu</string>
-    <string name="preferences_interface_menu_show_restore_title">Show Menu on Restore</string>
-    <string name="preferences_interface_menu_show_restore_summary_on">When returning home, keep the menu open.</string>
-    <string name="preferences_interface_menu_show_restore_summary_off">When returning home, restore based on last open/closed state.</string>
-    <string name="preferences_interface_menu_shade_color_title">Menu Shade Color</string>
-    <!-- Drawer -->
-    <string name="preferences_interface_drawer_title">Drawer</string>
-    <!-- Dock -->
-    <string name="preferences_interface_dock_title">Dock</string>
-    <!-- Icons -->
-    <string name="preferences_interface_icons_title">Icons</string>
-    <!-- Push Notifications -->
     <string name="preferences_general_push_title">Push Notifications</string>
     <string name="preferences_general_push_enable_title"> Push Notifications</string>
     <string name="preferences_general_push_enable_summary">Enable or disable push notifications</string>
@@ -45,20 +22,7 @@
     <string name="preferences_general_push_enable_test_summary">Subscribe to the testing channel of push notifications.</string>
     <string name="preferences_general_push_enable_updates_title">Update Push Notifications</string>
     <string name="preferences_general_push_enable_updates_summary">Subscribe to the updates channel of push notifications.</string>
-    <!-- QuickDash Settings -->
-    <string name="battery_level">Battery: 0 %</string>
-    <string name="wifi_desc">WiFi</string>
-    <string name="data_desc">Data</string>
-    <string name="sound_desc">Sound</string>
-    <string name="rotation_desc">Rotation</string>
-    <string name="airplane_desc">Airplane</string>
-    <string name="lte_desc">LTE</string>
-    <string name="tether_desc">Tether</string>
-    <string name="bluetooth_desc">Bluetooth</string>
-    <string name="gps_desc">GPS</string>
-    <string name="brightness_desc">Display</string>
-    <string name="torch_desc">Torch</string>
-    <string name="sync_desc">Sync</string>
+    <string name="preferences_interface_homescreen_general_category">General</string>
     <string name="title_user_detail">User Detail</string>
     <string name="title_user_list">Users</string>
 </resources>

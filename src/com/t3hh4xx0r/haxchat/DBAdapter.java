@@ -59,6 +59,11 @@ public class DBAdapter {
     public void close() {
     	DBHelper.close();
     }	
+    
+    public void dropChats() {
+        db.execSQL("DROP TABLE IF EXISTS chat");
+    	db.execSQL(CREATE_CHAT);
+    }
 	
 	public void putFriendsList(String user, ArrayList<String> fList) {
         db.execSQL("DROP TABLE IF EXISTS user_cache");

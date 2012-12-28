@@ -45,7 +45,7 @@ import com.t3hh4xx0r.haxchat.parse.ParseHelper;
 import com.t3hh4xx0r.haxchat.preferences.Preferences;
 
 public class ChatPrivateActivity extends SherlockActivity {
-	ParseUser currentUser;
+	public ParseUser currentUser;
 	String chattingUserNick;
 	String currentUserNick;
 	ListView lv1;
@@ -126,19 +126,8 @@ public class ChatPrivateActivity extends SherlockActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 			case R.id.menu_sign_out:
-				ParseUser.logOut();
-				currentUser = null;
-				Object[] list = PushService.getSubscriptions(this).toArray();
-				for (int i=0;i<list.length;i++) {
-					if (!list[i].equals("Broadcast") &&
-							!list[i].equals("testing") &&
-							!list[i].equals("updates")) {
-						PushService.unsubscribe(this, (String) list[i]);
-					}
-				}
-				Intent i = new Intent(this, LoginActivity.class);
-    			startActivityForResult(i, 0);
-				break;
+				ParseHelper.doLogoutSequence(null, this);
+
 				
 			case R.id.menu_settings:
 				Intent settingsIntent = new Intent(ChatPrivateActivity.this, Preferences.class);
@@ -181,7 +170,6 @@ public class ChatPrivateActivity extends SherlockActivity {
 	public BroadcastReceiver LocalChatReceiver  = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context c, Intent i) {	
-			Log.d("SHOULD UPDATE PTIVATE UI NOW", "LETS SEE");
 			Bundle b = i.getExtras();
 			String message = b.getString("message");
 			String time = convertRawTime(Long.parseLong(b.getString("time")));
@@ -240,5 +228,5 @@ public class ChatPrivateActivity extends SherlockActivity {
 	public String convertRawTime(long rawTime) {		
 		DateFormat f = SimpleDateFormat.getDateTimeInstance();
 		return f.format(rawTime);
-	}
+	}	
 }

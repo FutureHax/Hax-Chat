@@ -1,31 +1,34 @@
 package com.t3hh4xx0r.haxchat.fragments;
 
-import java.text.DateFormat;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.List;
 
-import org.json.JSONException;
-
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.parse.FindCallback;
 import com.parse.GetDataCallback;
 import com.parse.ParseException;
+import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseUser;
 import com.t3hh4xx0r.haxchat.R;
-import com.t3hh4xx0r.haxchat.activities.ChatMainActivity;
 import com.t3hh4xx0r.haxchat.activities.UserDetailActivity;
 import com.t3hh4xx0r.haxchat.activities.UserListActivity;
 import com.t3hh4xx0r.haxchat.parse.ParseHelper;
@@ -59,10 +62,14 @@ public class UserDetailFragment extends Fragment {
 	public UserDetailFragment() {
 	}
 
+	
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+	public void onAttach(Activity activity) {
+		super.onAttach(activity);
+		userCheck();
+	}
 
+	private void userCheck() {
 		if (getArguments().containsKey(ARG_ITEM_ID)) {		
 			if (getArguments().getString(ARG_ITEM_ID).contains("@")) {
 				ParseHelper.getUserByEmail(getArguments().getString(ARG_ITEM_ID), new FindCallback() {
@@ -70,7 +77,19 @@ public class UserDetailFragment extends Fragment {
 					public void done(List<ParseObject> res, ParseException e) {
 						if (e == null) {
 							detailedUser = (ParseUser) res.get(0);
-							updateUI();
+							if (detailedUser.getUsername().equals(ParseUser.getCurrentUser().getUsername())) {
+								Log.d("W00T "+detailedUser.getUsername(), ParseUser.getCurrentUser().getUsername());
+
+								Bundle arguments = new Bundle();
+								arguments.putString(UserDetailFragment.ARG_ITEM_ID, getArguments().getString(ARG_ITEM_ID));
+								EditableUserDetailFragment fragment = new EditableUserDetailFragment();
+								fragment.setArguments(arguments);
+								getActivity().getSupportFragmentManager().beginTransaction()
+										.replace(R.id.user_detail_container, fragment).commit();
+							} else {
+								Log.d("FAIL "+detailedUser.getUsername(), ParseUser.getCurrentUser().getUsername());
+								updateUI();
+							}
 						} else {
 							e.printStackTrace();
 						}
@@ -82,7 +101,19 @@ public class UserDetailFragment extends Fragment {
 					public void done(List<ParseObject> res, ParseException e) {
 						if (e == null) {
 							detailedUser = (ParseUser) res.get(0);
-							updateUI();
+							if (detailedUser.getUsername().equals(ParseUser.getCurrentUser().getUsername())) {
+								Log.d("W00T "+detailedUser.getUsername(), ParseUser.getCurrentUser().getUsername());
+
+								Bundle arguments = new Bundle();
+								arguments.putString(UserDetailFragment.ARG_ITEM_ID, getArguments().getString(ARG_ITEM_ID));
+								EditableUserDetailFragment fragment = new EditableUserDetailFragment();
+								fragment.setArguments(arguments);
+								getActivity().getSupportFragmentManager().beginTransaction()
+										.replace(R.id.user_detail_container, fragment).commit();
+							} else {
+								Log.d("FAIL "+detailedUser.getUsername(), ParseUser.getCurrentUser().getUsername());
+								updateUI();
+							}
 						} else {
 							e.printStackTrace();
 						}
@@ -149,6 +180,22 @@ public class UserDetailFragment extends Fragment {
 		} catch (Exception e) {
 			e.printStackTrace();
 			((TextView) rootView.findViewById(R.id.last_active)).setText("Last Active : Never");
+		}
+		
+		final ImageView avatar = (ImageView) rootView.findViewById(R.id.avatar);
+		ParseFile avatarBitmap = (ParseFile) detailedUser.get("Avatar");
+		if (avatarBitmap != null) {
+			avatarBitmap.getDataInBackground(new GetDataCallback() {
+				public void done(byte[] data, ParseException e) {
+					if (e == null) {
+						InputStream is = new ByteArrayInputStream(data);
+						Bitmap bmp = BitmapFactory.decodeStream(is);
+						avatar.setImageBitmap(bmp);
+				    } else {
+				      e.printStackTrace();
+				    }
+				  }
+			});
 		}
 	}
 }

@@ -29,64 +29,56 @@ public class ChatReceiver extends BroadcastReceiver {
 
 	@Override
 	public void onReceive(final Context c, Intent i) {	
-		  Log.d("JUST SENT UPDATE CAL:", "SENT");
-
-		if (i.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
-			ParseHelper.init(c);
-			ParseHelper.registerForPush(c);
-		} else {
-			final ParseUser user = ParseUser.getCurrentUser();
-			String message = null;
-			final String sender;
-			String time;		 
-			final String type;		 
-			 try {
-			      JSONObject json = new JSONObject(i.getExtras().getString("com.parse.Data"));
-			      message = json.getString("message");
-			      time = json.getString("time");
-			      type = json.getString("type");
-			      sender = json.getString("sender");
-			      DBAdapter db = new DBAdapter(c);
-				  db.open();
-				  db.insertChatMessage(sender, message, time, type);
-				  db.close();	
-				  
-				  Intent intent = new Intent();
-				  intent.setAction(ParseHelper.ACTION_CHAT_UPDATE);
-				  final Bundle b = new Bundle();
-				  b.putString("message", message);
-				  b.putString("sender", sender);
-				  b.putString("time", time);
-				  intent.putExtras(b);
-				  c.sendOrderedBroadcast(intent, null);
-				  ParseHelper.getDeviceNick(user, c, new FindCallback() {
-					@Override
-					public void done(List<ParseObject> r, ParseException e) {						
-						if (e == null) {
-							if (!sender.equals(r.get(0).get("DeviceNick"))) {
-								if (type.equals("private")) {
-									if (Integer.valueOf(android.os.Build.VERSION.SDK_INT) >= 16) {
-										notifyPrivateJellyBean(b, c);
-									} else {
-										notifyPrivatePreJellyBean(b, c);
-									}
+		final ParseUser user = ParseUser.getCurrentUser();
+		String message = null;
+		final String sender;
+		String time;		 
+		final String type;		 
+		try {
+			JSONObject json = new JSONObject(i.getExtras().getString("com.parse.Data"));
+			message = json.getString("message");
+			time = json.getString("time");
+			type = json.getString("type");
+			sender = json.getString("sender");
+			DBAdapter db = new DBAdapter(c);
+			db.open();
+			db.insertChatMessage(sender, message, time, type);
+			db.close();	
+			
+			Intent intent = new Intent();
+			intent.setAction(ParseHelper.ACTION_CHAT_UPDATE);
+			final Bundle b = new Bundle();
+			b.putString("message", message);
+			b.putString("sender", sender);
+			b.putString("time", time);
+			intent.putExtras(b);
+			c.sendOrderedBroadcast(intent, null);
+			ParseHelper.getDeviceNick(user, c, new FindCallback() {
+				@Override
+				public void done(List<ParseObject> r, ParseException e) {						
+					if (e == null) {
+						if (!sender.equals(r.get(0).get("DeviceNick"))) {
+							if (type.equals("private")) {
+								if (Integer.valueOf(android.os.Build.VERSION.SDK_INT) >= 16) {
+									notifyPrivateJellyBean(b, c);
 								} else {
-									if (Integer.valueOf(android.os.Build.VERSION.SDK_INT) >= 16) {
-										notifyJellyBean(b, c);
-									} else {
-										notifyPreJellyBean(b, c);
-									}
+									notifyPrivatePreJellyBean(b, c);
+								}
+							} else {
+								if (Integer.valueOf(android.os.Build.VERSION.SDK_INT) >= 16) {
+									notifyJellyBean(b, c);
+								} else {
+									notifyPreJellyBean(b, c);
 								}
 							}
-						} else {
-							e.printStackTrace();
 						}
+					} else {
+						e.printStackTrace();
 					}
-				}, false);
-				  
-			    } catch (JSONException e) {
-			    	e.printStackTrace();
-			    }
+				}
+			}, false);				  
+		} catch (JSONException e) {
+			e.printStackTrace();
 		}
 	}
 

@@ -55,7 +55,7 @@ public class PushFragment extends PreferenceFragment {
 				key.equals(ENABLE_TEST_PUSH) ||
 				key.equals(ENABLE_UPDATES_PUSH)) {
 			boolean value = ((CheckBoxPreference)preference).isChecked();
-			editor.putBoolean(key, value);
+			editor.putBoolean(key, value).apply();
 			ParseHelper.registerForPush(this.getActivity());
 		} 
 		return false;

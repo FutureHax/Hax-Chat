@@ -12,6 +12,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.View.OnFocusChangeListener;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -24,7 +25,6 @@ import com.parse.LogInCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseUser;
-import com.parse.PushService;
 import com.parse.SaveCallback;
 import com.parse.SignUpCallback;
 import com.t3hh4xx0r.haxchat.DBAdapter;
@@ -62,8 +62,29 @@ public class LoginActivity extends SherlockActivity {
 		
 		// Set up the login form.
 		mEmailView = (EditText) findViewById(R.id.email);
-
+		mEmailView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+			@Override
+			public boolean onEditorAction(TextView textView, int id,
+					KeyEvent keyEvent) {
+				if (id == EditorInfo.IME_ACTION_NEXT) {
+					if (!mEmailView.getText().toString().contains("@")) {
+						mEmailView.setText(mEmailView.getText().toString() +"@gmail.com");
+					} 
+				}
+				return false;
+			}
+		});
 		mPasswordView = (EditText) findViewById(R.id.password);
+		mPasswordView.setOnFocusChangeListener(new OnFocusChangeListener() {
+			@Override
+			public void onFocusChange(View v, boolean b) {
+				if (b) {
+					if (!mEmailView.getText().toString().contains("@")) {
+						mEmailView.setText(mEmailView.getText().toString() +"@gmail.com");
+					} 
+				}
+			}
+		});
 		mPasswordView
 				.setOnEditorActionListener(new TextView.OnEditorActionListener() {
 					@Override
@@ -72,6 +93,11 @@ public class LoginActivity extends SherlockActivity {
 						if (id == R.id.login || id == EditorInfo.IME_NULL) {
 							attemptLogin();
 							return true;
+						} else if (id == R.id.password) {
+							mEmail = mEmailView.getText().toString();
+							if (!mEmail.contains("@")) {
+								mEmailView.setText(mEmail +"@gmail.com");
+							} 
 						}
 						return false;
 					}
@@ -130,6 +156,8 @@ public class LoginActivity extends SherlockActivity {
 			mEmailView.setError(getString(R.string.error_field_required));
 			focusView = mEmailView;
 			cancel = true;
+		} else if (!mEmail.contains("@")) {
+			mEmail = mEmail +"@gmail.com";
 		} else if (!mEmail.contains("@gmail.com")) {
 			mEmailView.setError(getString(R.string.error_invalid_email));
 			focusView = mEmailView;
@@ -196,14 +224,13 @@ public class LoginActivity extends SherlockActivity {
 	}
 
 	protected void doLoggedIn() {
-		showProgress(false);
     	currentUser = ParseUser.getCurrentUser();
     	ParseHelper.refresh();
 		if (currentUser != null) {
 		  DBAdapter db = new DBAdapter(getApplicationContext()).open();
 		  db.putFriendsList(currentUser.getUsername(), ParseHelper.getUsersFriends());
 		  db.close();
-		  PushService.subscribe(this, "chat_"+ParseUser.getCurrentUser().getUsername(), ChatMainActivity.class);
+		  ParseHelper.subscribePrivateChat(this);
 		  Intent resI = new Intent();              
 		  setResult(Activity.RESULT_OK, resI);
 		  
@@ -222,6 +249,7 @@ public class LoginActivity extends SherlockActivity {
 							@Override
 							public void done(ParseException e) {
 								if (e == null) {
+									showProgress(false);
 									finish();
 								} else {
 									e.printStackTrace();
@@ -229,6 +257,7 @@ public class LoginActivity extends SherlockActivity {
 							}							  
 						  });
 					  } else {
+						  showProgress(false);
 						  finish();
 					  }
 				  }
