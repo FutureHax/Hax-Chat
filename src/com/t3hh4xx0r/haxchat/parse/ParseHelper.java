@@ -256,40 +256,21 @@ public 	class ParseHelper {
 		  PushService.subscribe(c, "chat_"+ParseUser.getCurrentUser().getUsername(), ChatPrivateActivity.class);		
 	}
 
-	public static void doLogoutSequence(ChatMainActivity mainAct, ChatPrivateActivity privateAct) {
-		if (privateAct == null) {
-			ParseUser.logOut();
-			mainAct.user = null;
-			Object[] list = PushService.getSubscriptions(mainAct).toArray();
-			for (int i=0;i<list.length;i++) {
-				if (!list[i].equals("Broadcast") &&
-						!list[i].equals("testing") &&
-						!list[i].equals("updates")) {
-					PushService.unsubscribe(mainAct, (String) list[i]);
-				}
+	public static void doLogoutSequence(Context ctx) {
+		ParseUser.logOut();
+		Object[] list = PushService.getSubscriptions(ctx).toArray();
+		for (int i=0;i<list.length;i++) {
+			if (!list[i].equals("Broadcast") &&
+					!list[i].equals("testing") &&
+					!list[i].equals("updates")) {
+				PushService.unsubscribe(ctx, (String) list[i]);
 			}
-			DBAdapter d = new DBAdapter(mainAct).open();
-			d.dropChats();
-			d.close();
-			Intent i = new Intent(mainAct, LoginActivity.class);
-			mainAct.startActivityForResult(i, 0);		
-		} else {
-			ParseUser.logOut();
-			privateAct.currentUser = null;
-			Object[] list = PushService.getSubscriptions(privateAct).toArray();
-			for (int i=0;i<list.length;i++) {
-				if (!list[i].equals("Broadcast") &&
-						!list[i].equals("testing") &&
-						!list[i].equals("updates")) {
-					PushService.unsubscribe(privateAct, (String) list[i]);
-				}
-			}
-			DBAdapter d = new DBAdapter(privateAct).open();
-			d.dropChats();
-			d.close();
-			Intent i = new Intent(privateAct, LoginActivity.class);
-			privateAct.startActivityForResult(i, 0);		
 		}
+		DBAdapter d = new DBAdapter(ctx).open();
+		d.dropChats();
+		d.close();
+		Intent i = new Intent(ctx, ChatMainActivity.class);
+		ctx.startActivity(i);			
 		
 	}
 

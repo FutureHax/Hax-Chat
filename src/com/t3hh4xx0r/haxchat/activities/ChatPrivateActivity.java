@@ -38,9 +38,9 @@ import com.parse.ParseObject;
 import com.parse.ParsePush;
 import com.parse.ParseUser;
 import com.parse.PushService;
+import com.slidingmenu.lib.SlidingMenu;
 import com.t3hh4xx0r.haxchat.DBAdapter;
 import com.t3hh4xx0r.haxchat.R;
-import com.t3hh4xx0r.haxchat.SlideMenu;
 import com.t3hh4xx0r.haxchat.parse.ParseHelper;
 import com.t3hh4xx0r.haxchat.preferences.Preferences;
 
@@ -126,7 +126,7 @@ public class ChatPrivateActivity extends SherlockActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 			case R.id.menu_sign_out:
-				ParseHelper.doLogoutSequence(null, this);
+				ParseHelper.doLogoutSequence(this);
 
 				
 			case R.id.menu_settings:
@@ -140,8 +140,7 @@ public class ChatPrivateActivity extends SherlockActivity {
 				break;
 				
 			case android.R.id.home: 
-				SlideMenu slide = (SlideMenu) findViewById(R.id.menu);
-				slide.toggle();
+				SlidingMenu slide = (SlidingMenu) findViewById(R.id.slidingmenulayout);				
 				
 				break;
 				

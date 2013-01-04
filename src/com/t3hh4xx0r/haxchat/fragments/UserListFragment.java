@@ -62,7 +62,7 @@ public class UserListFragment extends Fragment {
 			rootView.invalidate();
 		}
 		
-		rootView = inflater.inflate(R.layout.expandable_list, container, false);
+		rootView = inflater.inflate(R.layout.user_list_menu, container, false);
 		final ExpandableListView ExpandList = (ExpandableListView) rootView.findViewById(R.id.ExpList);
 		ExpandList.setOnChildClickListener(new OnChildClickListener() {			
 			@Override

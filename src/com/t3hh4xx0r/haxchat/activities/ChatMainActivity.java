@@ -1,17 +1,11 @@
 package com.t3hh4xx0r.haxchat.activities;
 
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import android.app.ActionBar;
 import android.app.Activity;
@@ -30,22 +24,22 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 
-import com.actionbarsherlock.app.SherlockActivity;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuItem;
 import com.parse.FindCallback;
 import com.parse.ParseObject;
-import com.parse.ParsePush;
 import com.parse.ParseUser;
-import com.parse.PushService;
+import com.slidingmenu.lib.SlidingMenu;
 import com.t3hh4xx0r.haxchat.ChangeLogDialog;
 import com.t3hh4xx0r.haxchat.DBAdapter;
 import com.t3hh4xx0r.haxchat.R;
-import com.t3hh4xx0r.haxchat.SlideMenu;
 import com.t3hh4xx0r.haxchat.parse.ParseHelper;
-import com.t3hh4xx0r.haxchat.preferences.Preferences;
 
-public class ChatMainActivity extends SherlockActivity {
+public class ChatMainActivity extends BaseChatActivity {
+
+
+	public ChatMainActivity() {
+		super("Main");
+	}
+
 	public ParseUser user;
 	ListView lv1;
 	Button send;
@@ -58,22 +52,19 @@ public class ChatMainActivity extends SherlockActivity {
 	ArrayList<String> chatList;
 	
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
+	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_chat_main);
+		setContentView(R.layout.content_frame);
 		
-		ParseHelper.init(this);
+		ParseHelper.init(this);			
 		ChangeLogDialog.show(this);
-		setActivityTitle();
-		ActionBar bar = getActionBar();
-		bar.setDisplayHomeAsUpEnabled(true);
-		bar.setBackgroundDrawable(new ColorDrawable(android.R.color.background_dark));
 		
 		user = ParseUser.getCurrentUser();
 		if (user == null) {
 			Intent i = new Intent(this, LoginActivity.class);
 			startActivityForResult(i, 0);
 		} 				
+		
 		
 	    lv1 = (ListView) findViewById(R.id.display_list);  
 	    lv1.setTranscriptMode(ListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
@@ -97,39 +88,7 @@ public class ChatMainActivity extends SherlockActivity {
 	    });
 	}
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		getSupportMenuInflater().inflate(R.menu.activity_chat_main, menu);
-		return true;
-	}
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-			case R.id.menu_sign_out:
-				ParseHelper.doLogoutSequence(this, null);
-				
-				break;
-				
-			case R.id.menu_settings:
-				Intent settingsIntent = new Intent(ChatMainActivity.this, Preferences.class);
-				startActivity(settingsIntent);
-				break;
-				
-			case R.id.menu_users:
-				Intent usersIntent = new Intent(ChatMainActivity.this, UserListActivity.class);
-				startActivity(usersIntent);
-				break;
-				
-			case android.R.id.home: 
-				SlideMenu slide = (SlideMenu) findViewById(R.id.menu);
-				slide.toggle();
-				
-				break;
-				
-		}
-		return true;		
-	}
 	
 	private ArrayList<String> getChatList(Context c) {
 		 ArrayList<String> res = new ArrayList<String>();
