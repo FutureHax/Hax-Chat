@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+	<LinearLayout  xmlns:android="http://schemas.android.com/apk/res/android"
+		android:id="@+id/content_frame"
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent"
+	    android:orientation="vertical" >
+	    
+		<LinearLayout android:id="@+id/general_prefs"
+		    android:layout_width="match_parent" 
+		    android:layout_height="wrap_content"
+		    android:minHeight="?android:attr/listPreferredItemHeight"
+		    android:gravity="center_vertical" 
+		    android:paddingRight="?android:attr/scrollbarSize">
+		    <ImageView 
+		    	android:layout_width="wrap_content"
+		        android:layout_height="wrap_content" 
+		        android:layout_marginLeft="6dip"
+		        android:layout_marginRight="6dip" 
+		        android:layout_gravity="center" />
+		    <RelativeLayout android:layout_width="wrap_content"
+		        android:layout_height="wrap_content" 
+		        android:layout_marginLeft="2dip"
+		        android:layout_marginRight="6dip" 
+		        android:layout_marginTop="6dip"
+		        android:layout_marginBottom="6dip" 
+		        android:layout_weight="1">
+		        <TextView 
+		            android:id="@android:id/title"
+		            android:layout_width="wrap_content" 
+		            android:layout_height="wrap_content"
+		            android:singleLine="true" 
+		            android:text="Manage General Preferences"
+		            android:textAppearance="?android:attr/textAppearanceLarge"
+		            android:ellipsize="marquee" 
+		            android:fadingEdge="horizontal" />
+		        <TextView 
+		            android:layout_width="wrap_content" 
+		            android:layout_height="wrap_content"
+		            android:text="General prefs 'n such"
+		            android:layout_below="@android:id/title" 
+		            android:layout_alignLeft="@android:id/title"
+		            android:textAppearance="?android:attr/textAppearanceSmall"
+		            android:maxLines="2" />
+		    </RelativeLayout>
+		</LinearLayout>
+		
+		<LinearLayout android:id="@+id/alert_prefs"
+		    android:layout_width="match_parent" 
+		    android:layout_height="wrap_content"
+		    android:minHeight="?android:attr/listPreferredItemHeight"
+		    android:gravity="center_vertical" 
+		    android:paddingRight="?android:attr/scrollbarSize">
+		    <ImageView 
+		    	android:layout_width="wrap_content"
+		        android:layout_height="wrap_content" 
+		        android:layout_marginLeft="6dip"
+		        android:layout_marginRight="6dip" 
+		        android:layout_gravity="center" />
+		    <RelativeLayout android:layout_width="wrap_content"
+		        android:layout_height="wrap_content" 
+		        android:layout_marginLeft="2dip"
+		        android:layout_marginRight="6dip" 
+		        android:layout_marginTop="6dip"
+		        android:layout_marginBottom="6dip" 
+		        android:layout_weight="1">
+		        <TextView 
+		            android:id="@android:id/title"
+		            android:layout_width="wrap_content" 
+		            android:layout_height="wrap_content"
+		            android:singleLine="true" 
+		            android:text="Manage Alert Preferences"
+		            android:textAppearance="?android:attr/textAppearanceLarge"
+		            android:ellipsize="marquee" 
+		            android:fadingEdge="horizontal" />
+		        <TextView 
+		            android:layout_width="wrap_content" 
+		            android:layout_height="wrap_content"
+		            android:text="Alert prefs 'n such"
+		            android:layout_below="@android:id/title" 
+		            android:layout_alignLeft="@android:id/title"
+		            android:textAppearance="?android:attr/textAppearanceSmall"
+		            android:maxLines="2" />
+		    </RelativeLayout>
+		</LinearLayout>
+		
+			<LinearLayout android:id="@+id/push_prefs"
+		    android:layout_width="match_parent" 
+		    android:layout_height="wrap_content"
+		    android:minHeight="?android:attr/listPreferredItemHeight"
+		    android:gravity="center_vertical" 
+		    android:paddingRight="?android:attr/scrollbarSize">
+		    <ImageView 
+		    	android:layout_width="wrap_content"
+		        android:layout_height="wrap_content" 
+		        android:layout_marginLeft="6dip"
+		        android:layout_marginRight="6dip" 
+		        android:layout_gravity="center" />
+		    <RelativeLayout android:layout_width="wrap_content"
+		        android:layout_height="wrap_content" 
+		        android:layout_marginLeft="2dip"
+		        android:layout_marginRight="6dip" 
+		        android:layout_marginTop="6dip"
+		        android:layout_marginBottom="6dip" 
+		        android:layout_weight="1">
+		        <TextView 
+		            android:id="@android:id/title"
+		            android:layout_width="wrap_content" 
+		            android:layout_height="wrap_content"
+		            android:singleLine="true" 
+		            android:text="Manage Push Preferences"
+		            android:textAppearance="?android:attr/textAppearanceLarge"
+		            android:ellipsize="marquee" 
+		            android:fadingEdge="horizontal" />
+		        <TextView 
+		            android:layout_width="wrap_content" 
+		            android:layout_height="wrap_content"
+		            android:text="Push prefs 'n such"
+		            android:layout_below="@android:id/title" 
+		            android:layout_alignLeft="@android:id/title"
+		            android:textAppearance="?android:attr/textAppearanceSmall"
+		            android:maxLines="2" />
+		    </RelativeLayout>
+		</LinearLayout>
+	</LinearLayout>

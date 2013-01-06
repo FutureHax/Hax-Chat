@@ -4,37 +4,37 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Activity;
+import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
+import android.widget.BaseExpandableListAdapter;
+import android.widget.CheckedTextView;
 import android.widget.ExpandableListView;
 import android.widget.ExpandableListView.OnChildClickListener;
-import android.widget.ExpandableListView.OnGroupCollapseListener;
-import android.widget.ExpandableListView.OnGroupExpandListener;
 import android.widget.ImageView;
-import android.widget.ListAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
-import com.t3hh4xx0r.haxchat.ExpandListAdapter;
-import com.t3hh4xx0r.haxchat.ExpandListChild;
-import com.t3hh4xx0r.haxchat.ExpandListGroup;
+import com.parse.ParseUser;
+import com.t3hh4xx0r.haxchat.FileCache;
 import com.t3hh4xx0r.haxchat.R;
 import com.t3hh4xx0r.haxchat.parse.ParseHelper;
 
 public class UserListFragment extends Fragment {
-
-	static ArrayList<String> allUserNames;
+	
+	ArrayList<String> groupItem = new ArrayList<String>();
+	ArrayList<Object> childItem = new ArrayList<Object>();
+	static ArrayList<ParseUser> allUsers;
 	View rootView;
-
-	private static final String STATE_ACTIVATED_POSITION = "activated_position";
-
+	ExpandableListView expList;
+	
 	private Callbacks mCallbacks = sDummyCallbacks;
 
 	public interface Callbacks {
@@ -63,25 +63,12 @@ public class UserListFragment extends Fragment {
 		}
 		
 		rootView = inflater.inflate(R.layout.user_list_menu, container, false);
-		final ExpandableListView ExpandList = (ExpandableListView) rootView.findViewById(R.id.ExpList);
-		ExpandList.setOnChildClickListener(new OnChildClickListener() {			
+		expList = (ExpandableListView) rootView.findViewById(R.id.ExpList);
+		expList.setOnChildClickListener(new OnChildClickListener() {			
 			@Override
 			public boolean onChildClick(ExpandableListView parent, View v,
 					int groupPosition, int childPosition, long id) {
-				mCallbacks.onChildItemSelected(((TextView) v).getText().toString());
 				return false;
-			}
-		});
-		ExpandList.setOnGroupCollapseListener(new OnGroupCollapseListener() {			
-			@Override
-			public void onGroupCollapse(int groupPosition) {		
-				((ImageView) rootView.findViewById(R.id.arrow)).setImageResource(android.R.drawable.arrow_down_float);
-			}
-		});
-		ExpandList.setOnGroupExpandListener(new OnGroupExpandListener() {
-			@Override
-			public void onGroupExpand(int groupPosition) {				
-				((ImageView) rootView.findViewById(R.id.arrow)).setImageResource(android.R.drawable.arrow_up_float);
 			}
 		});
 
@@ -89,57 +76,29 @@ public class UserListFragment extends Fragment {
 			ParseHelper.getAllUsers(new FindCallback() {			
 				@Override
 				public void done(List<ParseObject> r, ParseException e) {
-					allUserNames = new ArrayList<String>(); 
-					for (int i=0;i<r.size();i++) {
-						allUserNames.add(r.get(i).getString("username"));
-					}	
-					ArrayList<ExpandListGroup> ExpListItems = SetStandardGroups();
-					ExpandListAdapter ExpAdapter = new ExpandListAdapter(getActivity(), ExpListItems);
-					ExpandList.setAdapter(ExpAdapter);
-					rootView.findViewById(R.id.pBar).setVisibility(View.GONE);
+					if (e == null) {
+						allUsers = new ArrayList<ParseUser>(); 
+						for (int i=0;i<r.size();i++) {
+							allUsers.add((ParseUser) r.get(i));
+						}	
+						setGroupData();
+						setChildGroupData();
+						ExpListAdapter a = new ExpListAdapter(groupItem, childItem);
+						try {
+							a.setInflater((LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE), getActivity());
+							expList.setAdapter(a);
+						} catch (NullPointerException npe) {}
+					} else {
+						allUsers = new ArrayList<ParseUser>(); 
+					}
 				}
 			});
 		} catch (ParseException e) {
-			allUserNames = new ArrayList<String>(); 
-			allUserNames.clear();
+			allUsers = new ArrayList<ParseUser>(); 
 			e.printStackTrace();
-		}
+		} 
 		
 		return rootView;
-	}
-	
-    public ArrayList<ExpandListGroup> SetStandardGroups() {
-    	ArrayList<ExpandListGroup> list = new ArrayList<ExpandListGroup>();
-    	ArrayList<ExpandListChild> allChildren = new ArrayList<ExpandListChild>();
-    	ArrayList<ExpandListChild> friendChildren = new ArrayList<ExpandListChild>();
-    	
-        ExpandListGroup friendsList = new ExpandListGroup();
-        friendsList.setName("Friends");
-        for (int i=0;i<ParseHelper.getCachedUsersFriends(getActivity()).size();i++) {
-        	ExpandListChild friend = new ExpandListChild();
-        	friend.setName(ParseHelper.getCachedUsersFriends(getActivity()).get(i));
-        	friendChildren.add(friend);
-        }
-        friendsList.setItems(friendChildren);
-        
-        ExpandListGroup allList = new ExpandListGroup();
-        allList.setName("All Users");
-        for (int i=0;i<allUserNames.size();i++) {
-        	ExpandListChild user = new ExpandListChild();
-        	user.setName(allUserNames.get(i));
-            allChildren.add(user);
-        }        
-        allList.setItems(allChildren);
-        
-        list.add(friendsList);
-        list.add(allList);
-        
-        return list;
-    }
-    
-	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState) {
-		super.onViewCreated(view, savedInstanceState);
 	}
 
 	@Override
@@ -149,7 +108,6 @@ public class UserListFragment extends Fragment {
 			throw new IllegalStateException(
 					"Activity must implement fragment's callbacks.");
 		}
-
 		mCallbacks = (Callbacks) activity;
 	}
 
@@ -159,11 +117,145 @@ public class UserListFragment extends Fragment {
 		mCallbacks = sDummyCallbacks;
 	}
 
-	public static ArrayList<String> getAllUserNames() {
-		if (allUserNames == null) {
-			return new ArrayList<String>();
+	public static ArrayList<ParseUser> getallUsers() {
+		if (allUsers == null) {
+			return new ArrayList<ParseUser>();
 		}		
-		return allUserNames;
+		return allUsers;
+	}
+	
+	public void setGroupData() {
+		groupItem.add("Friends");
+		groupItem.add("All Users");
 	}
 
+	public void setChildGroupData() {
+    	childItem.add(ParseHelper.getCachedUsersFriends(getActivity()));
+    	childItem.add(allUsers);
+	}
+	
+	public class ExpListAdapter extends BaseExpandableListAdapter {
+
+		public ArrayList<String> groupItem, tempChildString;
+		ArrayList<ParseUser> tempChildUser;
+		public ArrayList<Object> Childtem = new ArrayList<Object>();
+		public LayoutInflater minflater;
+		public Activity activity;
+
+		public ExpListAdapter(ArrayList<String> grList, ArrayList<Object> childItem) {
+			groupItem = grList;
+			this.Childtem = childItem;
+		}
+
+		public void setInflater(LayoutInflater mInflater, Activity act) {
+			this.minflater = mInflater;
+			activity = act;
+		}
+
+		@Override
+		public Object getChild(int groupPosition, int childPosition) {
+			return null;
+		}
+
+		@Override
+		public long getChildId(int groupPosition, int childPosition) {
+			return 0;
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
+			convertView = minflater.inflate(R.layout.exp_child_row, null);
+
+			String textValue;
+			Object item = ((ArrayList<?>) Childtem.get(groupPosition)).get(0);
+			if (item instanceof String) {
+				tempChildString = (ArrayList<String>) Childtem.get(groupPosition);
+				textValue = tempChildString.get(childPosition);	
+				final ImageView avatar = (ImageView) convertView.findViewById(R.id.childImage);
+				FileCache fCache = new FileCache(activity);
+				Bitmap b = fCache.getBitmap(textValue, true);
+				if (b != null) {
+					avatar.setImageBitmap(b);
+				}
+			} else {
+				tempChildUser = (ArrayList<ParseUser>) Childtem.get(groupPosition);
+				textValue = tempChildUser.get(childPosition).getUsername();
+				final ImageView avatar = (ImageView) convertView.findViewById(R.id.childImage);
+				FileCache fCache = new FileCache(activity);
+				Bitmap b = fCache.getBitmap(tempChildUser.get(childPosition).getUsername(), true);
+				if (b != null) {					
+					avatar.setImageBitmap(b);
+				}
+			}
+			final TextView text = (TextView) convertView.findViewById(R.id.textView1);
+			text.setText(textValue);
+			convertView.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					mCallbacks.onChildItemSelected(text.getText().toString());					
+				}
+			});
+
+
+			return convertView;
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public int getChildrenCount(int groupPosition) {
+			return ((ArrayList<String>) Childtem.get(groupPosition)).size();
+		}
+
+		@Override
+		public Object getGroup(int groupPosition) {
+			return null;
+		}
+
+		@Override
+		public int getGroupCount() {
+			return groupItem.size();
+		}
+
+		@Override
+		public void onGroupCollapsed(int groupPosition) {
+			super.onGroupCollapsed(groupPosition);
+		}
+
+		@Override
+		public void onGroupExpanded(int groupPosition) {
+			super.onGroupExpanded(groupPosition);
+		}
+
+		@Override
+		public long getGroupId(int groupPosition) {
+			return 0;
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public View getGroupView(int groupPosition, boolean isExpanded,
+				View convertView, ViewGroup parent) {
+			if (convertView == null) {
+				convertView = minflater.inflate(R.layout.exp_group_row, null);
+			}
+			ArrayList<String> tmp = ((ArrayList<String>) Childtem.get(groupPosition));
+			((CheckedTextView) convertView).setText(groupItem.get(groupPosition));
+			((CheckedTextView) convertView).setChecked(isExpanded);
+			if (tmp.isEmpty()) {
+				((CheckedTextView) convertView).setCompoundDrawables(null, null, null, null);
+			}
+			return convertView;
+		}
+
+		@Override
+		public boolean hasStableIds() {
+			return false;
+		}
+
+		@Override
+		public boolean isChildSelectable(int groupPosition, int childPosition) {
+			return false;
+		}
+	}
 }

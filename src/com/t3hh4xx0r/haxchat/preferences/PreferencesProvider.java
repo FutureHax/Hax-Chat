@@ -2,9 +2,12 @@ package com.t3hh4xx0r.haxchat.preferences;
 
 import java.util.UUID;
 
+import com.parse.ParseUser;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.preference.PreferenceManager;
 
 public final class PreferencesProvider {
     public static final String PREFERENCES_KEY = "com.t3hh4xx0r.haxchat_preferences";
@@ -41,5 +44,13 @@ public final class PreferencesProvider {
             }
         }
         return uniqueID;
+    }
+    
+    public static String deviceNick(Context c) {
+    	return PreferenceManager.getDefaultSharedPreferences(c).getString("deviceNick", ParseUser.getCurrentUser().getUsername());
+    }
+    
+    public static void setNick(Context c, String nick) {
+    	PreferenceManager.getDefaultSharedPreferences(c).edit().putString("deviceNick", nick).apply();
     }
 }

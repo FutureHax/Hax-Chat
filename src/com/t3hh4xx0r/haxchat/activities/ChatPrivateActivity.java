@@ -1,20 +1,9 @@
 package com.t3hh4xx0r.haxchat.activities;
 
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import android.app.ActionBar;
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -22,30 +11,24 @@ import android.content.IntentFilter;
 import android.database.Cursor;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 
-import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
-import com.parse.FindCallback;
-import com.parse.ParseObject;
-import com.parse.ParsePush;
 import com.parse.ParseUser;
-import com.parse.PushService;
-import com.slidingmenu.lib.SlidingMenu;
 import com.t3hh4xx0r.haxchat.DBAdapter;
 import com.t3hh4xx0r.haxchat.R;
 import com.t3hh4xx0r.haxchat.parse.ParseHelper;
-import com.t3hh4xx0r.haxchat.preferences.Preferences;
+import com.t3hh4xx0r.haxchat.preferences.PreferencesActivity;
+import com.t3hh4xx0r.haxchat.preferences.PreferencesProvider;
 
-public class ChatPrivateActivity extends SherlockActivity {
-	public ParseUser currentUser;
+public class ChatPrivateActivity extends BaseChatActivity {
+
+	public static ParseUser currentUser;
 	String chattingUserNick;
 	String currentUserNick;
 	ListView lv1;
@@ -53,58 +36,65 @@ public class ChatPrivateActivity extends SherlockActivity {
 	EditText input;
 	int chatCount = 0;
 
-	ArrayAdapter<String> a;
-	ArrayList<String> chatList;
+	ChatMainActivity.ChatListAdapter a;
+	ArrayList<ChatMainActivity.Message> chatList;
+	
+	public ChatPrivateActivity() {
+		super("Main");
+	}
 	
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
+	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_chat_main);
+		setContentView(R.layout.chat);
 		
-		ParseHelper.init(this);
 		currentUser = ParseUser.getCurrentUser();
-
-		ParseHelper.getDeviceNick(currentUser, this, new FindCallback() {			
-			@Override
-			public void done(List<ParseObject> r, com.parse.ParseException e) {
-				if (e == null) {
-					currentUserNick = r.get(0).getString("DeviceNick");
-				}
-			}
-		}, false);
-		ActionBar bar = getActionBar();
-		bar.setDisplayHomeAsUpEnabled(true);
-		bar.setBackgroundDrawable(new ColorDrawable(android.R.color.background_dark));
-		
-				
+		currentUserNick = PreferencesProvider.deviceNick(this);
+//		ParseHelper.getDeviceNick(this, new FindCallback() {			
+//			@Override
+//			public void done(List<ParseObject> r, com.parse.ParseException e) {
+//				if (e == null) {
+//					currentUserNick = r.get(0).getString("DeviceNick");
+//					setup();
+//				} else {
+//					Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_SHORT).show();
+//					e.printStackTrace();
+//				}
+//			}
+//		}, false);
+		setup();
+	}
+	
+	protected void setup() {
 	    lv1 = (ListView) findViewById(R.id.display_list);  
 	    lv1.setTranscriptMode(ListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
 	    lv1.setStackFromBottom(true);	    
+	    lv1.setStackFromBottom(true);
+	    lv1.setDivider(new ColorDrawable(getResources().getColor(android.R.color.transparent)));
+	    lv1.setDividerHeight(5);
 	    chattingUserNick = getIntent().getStringExtra("user");
 	    chatList = getChatListFromUser(this, chattingUserNick);
-	    a = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, chatList);
+	    a = new ChatMainActivity.ChatListAdapter(this, chatList);
 	    lv1.setAdapter(a);
-	    
+
 	    input = (EditText) findViewById(R.id.input);
 	    send = (Button) findViewById(R.id.send_button);
 	    send.setOnClickListener(new OnClickListener(){
 			@Override
 			public void onClick(View v) {
-				ParseHelper.sendPrivateMessage(input.getText().toString(), Long.toString(System.currentTimeMillis()), getIntent().getStringExtra("user"), v.getContext());
-				StringBuilder sB = new StringBuilder();
-				sB.append(convertRawTime(System.currentTimeMillis()));
-				sB.append(":");
-				sB.append(getIntent().getStringExtra("user"));
-				sB.append(" - ");
-				sB.append(input.getText().toString());
-				chatList.add(sB.toString());
+				ParseHelper.sendPrivateMessage(input.getText().toString(), Long.toString(System.currentTimeMillis()), getIntent().getStringExtra("user"), v.getContext());				
+				Message m = new Message();
+				m.setDateTime(convertRawTime(System.currentTimeMillis()));
+				m.setMessage(input.getText().toString());
+				m.setSender(getIntent().getStringExtra("user"));
+				m.setType(getIntent().getStringExtra("user").equals(currentUserNick) ? Message.OUTGOING : Message.INCOMING);
+				chatList.add(m);
 				a.notifyDataSetChanged();
 				DBAdapter db = new DBAdapter(v.getContext());
-				db.open();
+				db.open(true);
 				db.insertChatMessage(currentUserNick, input.getText().toString(), Long.toString(System.currentTimeMillis()), "private");
 				db.close();					
-				input.setText("");
-				
+				input.setText("");				
 			}	    	
 	    });
 	    
@@ -113,56 +103,25 @@ public class ChatPrivateActivity extends SherlockActivity {
         registerReceiver(LocalChatReceiver, filter);
         
         currentUser = ParseUser.getCurrentUser();
-		ChatPrivateActivity.this.setTitle("Private Chat - "+chattingUserNick);
+		ChatPrivateActivity.this.setTitle("Private Chat - "+chattingUserNick);		
 	}
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		getSupportMenuInflater().inflate(R.menu.activity_chat_main, menu);
-		return true;
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-			case R.id.menu_sign_out:
-				ParseHelper.doLogoutSequence(this);
-
-				
-			case R.id.menu_settings:
-				Intent settingsIntent = new Intent(ChatPrivateActivity.this, Preferences.class);
-				startActivity(settingsIntent);
-				break;
-				
-			case R.id.menu_users:
-				Intent usersIntent = new Intent(ChatPrivateActivity.this, UserListActivity.class);
-				startActivity(usersIntent);
-				break;
-				
-			case android.R.id.home: 
-				SlidingMenu slide = (SlidingMenu) findViewById(R.id.slidingmenulayout);				
-				
-				break;
-				
-		}
-		return true;		
-	}
-	
-	private ArrayList<String> getChatListFromUser(Context c, String name) {
-		 ArrayList<String> res = new ArrayList<String>();
+	private ArrayList<Message> getChatListFromUser(Context c, String name) {
+		 ArrayList<Message> res = new ArrayList<Message>();
 		 DBAdapter db = new DBAdapter(c);
-		 db.open();
+		 db.open(false);
 		 Cursor cur = db.getPrivateChatsForUser(name);
 		 chatCount = cur.getCount();
-		 while (cur.moveToNext()) {
-			StringBuilder sB = new StringBuilder();
-			sB.append(convertRawTime(Long.parseLong(cur.getString(cur.getColumnIndex("sent_time")))));
-			sB.append(":");
-			sB.append(cur.getString(cur.getColumnIndex("sender")));
-			sB.append(" - ");
-			sB.append(cur.getString(cur.getColumnIndex("message")));
-			res.add(sB.toString());
+		 while (cur.moveToNext()) { 
+			Message m = new Message();
+			m.setDateTime(convertRawTime(Long.parseLong(cur.getString(cur.getColumnIndex("sent_time")))));
+			m.setMessage(cur.getString(cur.getColumnIndex("message")));
+			m.setSender(cur.getString(cur.getColumnIndex("sender")));
+			m.setType(cur.getString(cur.getColumnIndex("sender")).equals(currentUserNick) ? Message.OUTGOING : Message.INCOMING);
+			res.add(m);											
 		 }
+		 cur.close();
+		 db.close();
 		 return res;
 	}
 	
@@ -170,23 +129,18 @@ public class ChatPrivateActivity extends SherlockActivity {
 		@Override
 		public void onReceive(Context c, Intent i) {	
 			Bundle b = i.getExtras();
-			String message = b.getString("message");
-			String time = convertRawTime(Long.parseLong(b.getString("time")));
-			String sender = b.getString("sender");
-			
-			StringBuilder sB = new StringBuilder();
-			sB.append(time);
-			sB.append(":");
-			sB.append(sender);
-			sB.append(" - ");
-			sB.append(message);
-			chatList.add(sB.toString());
+			Message m = new Message();
+			m.setDateTime(convertRawTime(Long.parseLong(b.getString("time"))));
+			m.setSender(b.getString("sender"));
+			m.setMessage(b.getString("message"));
+			m.setType(b.getString("sender").equals(currentUserNick) ? Message.OUTGOING : Message.INCOMING);			
+			chatList.add(m);
 			a.notifyDataSetChanged();
 		}
 	};
 	
     @Override
-    protected void onResume() {
+	public void onResume() {
         IntentFilter filter = new IntentFilter();
         filter.addAction(ParseHelper.ACTION_CHAT_UPDATE);
         registerReceiver(LocalChatReceiver, filter);
@@ -202,30 +156,40 @@ public class ChatPrivateActivity extends SherlockActivity {
         unregisterReceiver(LocalChatReceiver);
         super.onPause();
     }
-    
-	@Override
-	protected void onActivityResult(
-	    int aRequestCode, int aResultCode, Intent aData) {
-	    switch (aRequestCode) {
-	        case 0:
-	            if (aResultCode == Activity.RESULT_OK) {
-	            	currentUser = ParseUser.getCurrentUser();
-					ChatPrivateActivity.this.setTitle("Private Chat - "+chattingUserNick);
-	            	if (currentUser == null) {
-	        			Intent i = new Intent(this, LoginActivity.class);
-	        			startActivityForResult(i, 0);
-	        		} 
-	            } else {
-	            	Intent i = new Intent(this, LoginActivity.class);
-	    			startActivityForResult(i, 0);
-	    		}
-	            break;	        
-	    }
-	    super.onActivityResult(aRequestCode, aResultCode, aData);
-	}
 	
 	public String convertRawTime(long rawTime) {		
 		DateFormat f = SimpleDateFormat.getDateTimeInstance();
 		return f.format(rawTime);
 	}	
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {		
+		getSupportMenuInflater().inflate(R.menu.chat_menu, menu);
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+			case R.id.menu_sign_out:
+				ParseHelper.doLogoutSequence(this);	
+				finish();
+				break;
+				
+			case R.id.menu_settings:
+				Intent settingsIntent = new Intent(this, PreferencesActivity.class);
+				startActivity(settingsIntent);
+				break;
+				
+			case R.id.menu_users:
+				getSlidingMenu().showSecondaryMenu();
+				break;
+				
+			case android.R.id.home: 
+				toggle();
+				break;
+				
+		}
+		return true;		
+	}
 }

@@ -1,15 +1,18 @@
 package com.t3hh4xx0r.haxchat.activities;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.List;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
-import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnFocusChangeListener;
@@ -21,13 +24,16 @@ import android.widget.Toast;
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.parse.FindCallback;
+import com.parse.GetDataCallback;
 import com.parse.LogInCallback;
 import com.parse.ParseException;
+import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 import com.parse.SignUpCallback;
 import com.t3hh4xx0r.haxchat.DBAdapter;
+import com.t3hh4xx0r.haxchat.FileCache;
 import com.t3hh4xx0r.haxchat.R;
 import com.t3hh4xx0r.haxchat.parse.ParseHelper;
 import com.t3hh4xx0r.haxchat.preferences.PreferencesProvider;
@@ -59,7 +65,9 @@ public class LoginActivity extends SherlockActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login);
 		ParseHelper.init(this);
-		
+		if (ParseUser.getCurrentUser() != null) {
+			startChat(this);
+		}
 		// Set up the login form.
 		mEmailView = (EditText) findViewById(R.id.email);
 		mEmailView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -116,9 +124,15 @@ public class LoginActivity extends SherlockActivity {
 				});
 	}
 
+	private void startChat(Context c) {
+		Intent i = new Intent(c, ChatMainActivity.class);
+		startActivity(i);
+		finish();
+	}
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		getSupportMenuInflater().inflate(R.menu.activity_login, menu);
+		getSupportMenuInflater().inflate(R.menu.login_menu, menu);
 		return true;
 	}
 
@@ -227,84 +241,88 @@ public class LoginActivity extends SherlockActivity {
     	currentUser = ParseUser.getCurrentUser();
     	ParseHelper.refresh();
 		if (currentUser != null) {
-		  DBAdapter db = new DBAdapter(getApplicationContext()).open();
+		  DBAdapter db = new DBAdapter(getApplicationContext());
+		  db.open(true);
 		  db.putFriendsList(currentUser.getUsername(), ParseHelper.getUsersFriends());
 		  db.close();
-		  ParseHelper.subscribePrivateChat(this);
-		  Intent resI = new Intent();              
-		  setResult(Activity.RESULT_OK, resI);
-		  
+		  ParseHelper.subscribePrivateChat(this);		  
 		  ParseHelper.isDeviceRegistered(this, new FindCallback() {
-			  @Override
-			  public void done(List<ParseObject> r, ParseException e) {
-				  if (e == null) {
-					  Log.d("SIZE", r.size()+"");
+			@Override
+			public void done(List<ParseObject> r, ParseException e) {
+				if (e == null) {
 					  if (r.size() == 0) {
 						  ParseObject device = new ParseObject("Device");
 						  device.put("UserId", currentUser.getObjectId());
 						  device.put("DeviceID", PreferencesProvider.id(getApplicationContext()));
 						  device.put("DeviceNick", mUser);
+						  PreferencesProvider.setNick(getApplicationContext(), mUser);
 						  device.put("DeviceModel", Build.MODEL);
 						  device.saveInBackground(new SaveCallback() {
 							@Override
 							public void done(ParseException e) {
 								if (e == null) {
 									showProgress(false);
-									finish();
+									startAvatarFetching();
+									startChat(getApplicationContext());
 								} else {
 									e.printStackTrace();
 								}
-							}							  
+							}			  
 						  });
 					  } else {
 						  showProgress(false);
-						  finish();
+						  startAvatarFetching();
+						  startChat(getApplicationContext());
 					  }
 				  }
-			  }
+				}
 		  });
-
-//		  final ParseRelation device = currentUser.getRelation("DeviceList");
-//		  device.getQuery().whereEqualTo("DeviceID", PreferencesProvider.id(getApplicationContext())).findInBackground(new FindCallback() {
-//			  @Override
-//			  public void done(List<ParseObject> r, ParseException e) {
-//				if (e == null && r.isEmpty()) {
-//					  final ParseObject deviceObject = new ParseObject("Device");
-//					  deviceObject.put("DeviceID", PreferencesProvider.id(getApplicationContext()));
-//					  deviceObject.put("DeviceNick", mUser);
-//					  deviceObject.put("DeviceModel", Build.MODEL);
-//					  deviceObject.saveInBackground(new SaveCallback() {
-//						  @Override
-//						  public void done(ParseException e) {	
-//							  if (e != null) {
-//								  e.printStackTrace();
-//							  } else {
-//								  device.add(deviceObject);
-//								  currentUser.saveInBackground();
-//							  }	
-//						  }
-//					  });
-//				} else if (e != null) {
-//					e.printStackTrace();
-//				}
-//				finish();		  
-//			  }
-//		  });
-
 		} else {
 	    	mPasswordView.setText("");		
 	    	Toast.makeText(getApplicationContext(), "Unknown error, please try again.", Toast.LENGTH_LONG).show();
 		}
 	}
+	
+	private void startAvatarFetching() {
+		try {
+			ParseHelper.getAllUsers(new FindCallback() {			
+				@Override
+				public void done(List<ParseObject> r, ParseException e) {
+					if (e == null) {
+						final FileCache fCache = new FileCache(getApplicationContext());
+						for (int i=0;i<r.size();i++) {
+							final String uName = ((ParseUser) r.get(i)).getUsername();
+							Bitmap avi = fCache.getBitmap(((ParseUser) r.get(i)).getUsername(), true);
+							if (avi == null) {
+								ParseFile avatarBitmap = (ParseFile) r.get(i).get("Avatar");
+								if (avatarBitmap != null) {
+									avatarBitmap.getDataInBackground(new GetDataCallback() {
+										public void done(byte[] data, ParseException e) {
+											if (e == null) {
+												InputStream is = new ByteArrayInputStream(data);
+												Bitmap bmp = BitmapFactory.decodeStream(is);
+												fCache.putBitmap(bmp, uName, true);
+										    } else {
+										      e.printStackTrace();
+										    }
+										  }
+									});
+								}
+							} else {
+								fCache.putBitmap(avi, uName, true);
+							}
+						}
+					} else {}
+				}
+			});
+		} catch (ParseException e) {}								
+	}				
 
 	/**
 	 * Shows the progress UI and hides the login form.
 	 */
 	@TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
 	private void showProgress(final boolean show) {
-		// On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
-		// for very easy animations. If available, use these APIs to fade-in
-		// the progress spinner.
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
 			int shortAnimTime = getResources().getInteger(
 					android.R.integer.config_shortAnimTime);
@@ -331,8 +349,6 @@ public class LoginActivity extends SherlockActivity {
 						}
 					});
 		} else {
-			// The ViewPropertyAnimator APIs are not available, so simply show
-			// and hide the relevant UI components.
 			mLoginStatusView.setVisibility(show ? View.VISIBLE : View.GONE);
 			mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
 		}

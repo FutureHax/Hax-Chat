@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/content_frame"
+    android:clickable="true"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+    
+	<LinearLayout 
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:minHeight="?android:attr/listPreferredItemHeight"
+	    android:gravity="center_vertical"
+	    android:paddingEnd="?android:attr/scrollbarSize">
+	    <ImageView
+	        android:id="@+android:id/icon"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_gravity="center"
+	    />
+	    <RelativeLayout
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_marginStart="15dip"
+	        android:layout_marginEnd="6dip"
+	        android:layout_marginTop="6dip"
+	        android:layout_marginBottom="6dip"
+	        android:layout_weight="1">
+	        <TextView android:id="@+android:id/title"
+	            android:layout_width="wrap_content"
+				android:text="@string/preferences_general_push_enable_title"
+	            android:layout_height="wrap_content"
+	            android:singleLine="true"
+	            android:textAppearance="?android:attr/textAppearanceLarge"
+	            android:ellipsize="marquee"
+	            android:fadingEdge="horizontal" />
+	        <TextView android:id="@+android:id/summary"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+				android:text="@string/preferences_general_push_enable_summary"
+	            android:layout_below="@android:id/title"
+	            android:layout_alignStart="@android:id/title"
+	            android:textAppearance="?android:attr/textAppearanceSmall"
+	            android:textColor="?android:attr/textColorSecondary"
+	            android:maxLines="4" />
+	
+	    </RelativeLayout>
+	    <LinearLayout android:id="@+android:id/widget_frame"
+	        android:layout_width="wrap_content"
+	        android:layout_height="match_parent"
+	        android:gravity="center_vertical"
+	        android:orientation="vertical" >
+			<CheckBox xmlns:android="http://schemas.android.com/apk/res/android"
+			    android:id="@+id/push_other_checkbox" 
+			    android:layout_width="wrap_content"
+			    android:layout_height="wrap_content"
+			    android:layout_gravity="center"
+			    android:focusable="false"
+			    android:clickable="true" />
+		</LinearLayout>
+	</LinearLayout>
+	
+	<LinearLayout 
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:minHeight="?android:attr/listPreferredItemHeight"
+	    android:gravity="center_vertical"
+	    android:paddingEnd="?android:attr/scrollbarSize">
+	    <ImageView
+	        android:id="@+android:id/icon"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_gravity="center"
+	    />
+	    <RelativeLayout
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_marginStart="15dip"
+	        android:layout_marginEnd="6dip"
+	        android:layout_marginTop="6dip"
+	        android:layout_marginBottom="6dip"
+	        android:layout_weight="1">
+	        <TextView android:id="@+android:id/title"
+	            android:layout_width="wrap_content"
+				android:text="@string/preferences_general_push_enable_test_title"
+	            android:layout_height="wrap_content"
+	            android:singleLine="true"
+	            android:textAppearance="?android:attr/textAppearanceLarge"
+	            android:ellipsize="marquee"
+	            android:fadingEdge="horizontal" />
+	        <TextView android:id="@+android:id/summary"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+				android:text="@string/preferences_general_push_enable_test_summary"
+	            android:layout_below="@android:id/title"
+	            android:layout_alignStart="@android:id/title"
+	            android:textAppearance="?android:attr/textAppearanceSmall"
+	            android:textColor="?android:attr/textColorSecondary"
+	            android:maxLines="4" />
+	
+	    </RelativeLayout>
+	    <LinearLayout android:id="@+android:id/widget_frame"
+	        android:layout_width="wrap_content"
+	        android:layout_height="match_parent"
+	        android:gravity="center_vertical"
+	        android:orientation="vertical" >
+			<CheckBox xmlns:android="http://schemas.android.com/apk/res/android"
+			    android:id="@+id/push_test_checkbox" 
+			    android:layout_width="wrap_content"
+			    android:layout_height="wrap_content"
+			    android:layout_gravity="center"
+			    android:focusable="false"
+			    android:clickable="true" />
+		</LinearLayout>
+	</LinearLayout>	
+	
+	<LinearLayout 
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:minHeight="?android:attr/listPreferredItemHeight"
+	    android:gravity="center_vertical"
+	    android:paddingEnd="?android:attr/scrollbarSize">
+	    <ImageView
+	        android:id="@+android:id/icon"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_gravity="center"
+	    />
+	    <RelativeLayout
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_marginStart="15dip"
+	        android:layout_marginEnd="6dip"
+	        android:layout_marginTop="6dip"
+	        android:layout_marginBottom="6dip"
+	        android:layout_weight="1">
+	        <TextView android:id="@+android:id/title"
+	            android:layout_width="wrap_content"
+				android:text="@string/preferences_general_push_enable_updates_title"
+	            android:layout_height="wrap_content"
+	            android:singleLine="true"
+	            android:textAppearance="?android:attr/textAppearanceLarge"
+	            android:ellipsize="marquee"
+	            android:fadingEdge="horizontal" />
+	        <TextView android:id="@+android:id/summary"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+				android:text="@string/preferences_general_push_enable_updates_summary"
+	            android:layout_below="@android:id/title"
+	            android:layout_alignStart="@android:id/title"
+	            android:textAppearance="?android:attr/textAppearanceSmall"
+	            android:textColor="?android:attr/textColorSecondary"
+	            android:maxLines="4" />
+	
+	    </RelativeLayout>
+	    <LinearLayout android:id="@+android:id/widget_frame"
+	        android:layout_width="wrap_content"
+	        android:layout_height="match_parent"
+	        android:gravity="center_vertical"
+	        android:orientation="vertical" >
+			<CheckBox xmlns:android="http://schemas.android.com/apk/res/android"
+			    android:id="@+id/push_updates_checkbox" 
+			    android:layout_width="wrap_content"
+			    android:layout_height="wrap_content"
+			    android:layout_gravity="center"
+			    android:focusable="false"
+			    android:clickable="true" />
+		</LinearLayout>
+	</LinearLayout>		    
+</LinearLayout>

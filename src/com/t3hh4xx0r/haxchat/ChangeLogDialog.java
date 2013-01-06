@@ -1,6 +1,4 @@
 package com.t3hh4xx0r.haxchat;
-import java.io.IOException;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -12,7 +10,7 @@ import android.preference.PreferenceManager;
 
 public class ChangeLogDialog {
 
-	private static String EULA_PREFIX = "eula_";
+	private static String changelog_PREFIX = "changelog_";
 
 	private static PackageInfo getPackageInfo(Activity a) {
         PackageInfo pi = null;
@@ -27,9 +25,9 @@ public class ChangeLogDialog {
      public static void show(final Activity a) {
         PackageInfo versionInfo = getPackageInfo(a);
 
-		final String eulaKey = EULA_PREFIX + versionInfo.versionCode;
+		final String changelogKey = changelog_PREFIX + versionInfo.versionCode;
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(a);
-        boolean hasBeenShown = prefs.getBoolean(eulaKey, false);
+        boolean hasBeenShown = prefs.getBoolean(changelogKey, false);
         if(hasBeenShown == false){
             String title = a.getString(R.string.app_name) + " v" + versionInfo.versionName;
             String message = a.getString(R.string.updates);
@@ -40,9 +38,8 @@ public class ChangeLogDialog {
                     .setPositiveButton(android.R.string.ok, new Dialog.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-                            // Mark this version as read.
                             SharedPreferences.Editor editor = prefs.edit();
-                            editor.putBoolean(eulaKey, true);
+                            editor.putBoolean(changelogKey, true);
                             editor.commit();
                             dialogInterface.dismiss();
                         }

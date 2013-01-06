@@ -5,10 +5,9 @@ import java.util.ArrayList;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
+import android.text.TextUtils;
 
 public class DBAdapter {
 
@@ -28,10 +27,19 @@ public class DBAdapter {
     
     public DBAdapter(Context ctx) {
         this.context = ctx;
-        DBHelper = new DatabaseHelper(context);
+        DBHelper = DatabaseHelper.getInstance(context);
     }
         
     private static class DatabaseHelper extends SQLiteOpenHelper {
+        private static DatabaseHelper mInstance = null;
+        
+        public static DatabaseHelper getInstance(Context ctx) {
+            if (mInstance == null) {
+              mInstance = new DatabaseHelper(ctx.getApplicationContext());
+            }
+            return mInstance;
+          }
+        
         DatabaseHelper(Context context) {
             super(context, "hax_chat.db", null, 3);
         }
@@ -51,9 +59,8 @@ public class DBAdapter {
         }
     }    
     
-    public DBAdapter open() throws SQLException {
-        db = DBHelper.getWritableDatabase();
-        return this;
+    public void open(boolean writable) {
+        db = writable ? DBHelper.getWritableDatabase() : DBHelper.getReadableDatabase();
     }
 
     public void close() {
@@ -108,9 +115,12 @@ public class DBAdapter {
 		
 		mCursor.moveToFirst();
 		String fString = mCursor.getString(mCursor.getColumnIndex("friends"));
+		mCursor.close();
 		String[] list = fString.split(",");
 		for (int i=0;i<list.length;i++) {
-			res.add(list[i]);
+			if (!TextUtils.isEmpty(list[i])) {
+				res.add(list[i]);
+			}
 		}
 		return res;
 	}

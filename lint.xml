@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <issue id="ValidFragment">
+        <ignore path="src/com/t3hh4xx0r/haxchat/preferences/PreferencesMenuFragment.java" />
+    </issue>
+</lint>

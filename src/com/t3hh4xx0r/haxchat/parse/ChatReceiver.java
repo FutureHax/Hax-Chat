@@ -1,7 +1,5 @@
 package com.t3hh4xx0r.haxchat.parse;
 
-import java.util.List;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -14,12 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 
-import com.parse.FindCallback;
-import com.parse.ParseException;
-import com.parse.ParseObject;
-import com.parse.ParseUser;
 import com.t3hh4xx0r.haxchat.DBAdapter;
 import com.t3hh4xx0r.haxchat.R;
 import com.t3hh4xx0r.haxchat.activities.ChatMainActivity;
@@ -29,7 +22,6 @@ public class ChatReceiver extends BroadcastReceiver {
 
 	@Override
 	public void onReceive(final Context c, Intent i) {	
-		final ParseUser user = ParseUser.getCurrentUser();
 		String message = null;
 		final String sender;
 		String time;		 
@@ -41,7 +33,7 @@ public class ChatReceiver extends BroadcastReceiver {
 			type = json.getString("type");
 			sender = json.getString("sender");
 			DBAdapter db = new DBAdapter(c);
-			db.open();
+			db.open(true);
 			db.insertChatMessage(sender, message, time, type);
 			db.close();	
 			
@@ -53,38 +45,53 @@ public class ChatReceiver extends BroadcastReceiver {
 			b.putString("time", time);
 			intent.putExtras(b);
 			c.sendOrderedBroadcast(intent, null);
-			ParseHelper.getDeviceNick(user, c, new FindCallback() {
-				@Override
-				public void done(List<ParseObject> r, ParseException e) {						
-					if (e == null) {
-						if (!sender.equals(r.get(0).get("DeviceNick"))) {
-							if (type.equals("private")) {
-								if (Integer.valueOf(android.os.Build.VERSION.SDK_INT) >= 16) {
-									notifyPrivateJellyBean(b, c);
-								} else {
-									notifyPrivatePreJellyBean(b, c);
-								}
-							} else {
-								if (Integer.valueOf(android.os.Build.VERSION.SDK_INT) >= 16) {
-									notifyJellyBean(b, c);
-								} else {
-									notifyPreJellyBean(b, c);
-								}
-							}
-						}
+			if (!sender.equals(ParseHelper.getDeviceNick(c))) {
+				if (type.equals("private")) {
+					if (Integer.valueOf(android.os.Build.VERSION.SDK_INT) >= 16) {
+						notifyPrivateJellyBean(b, c);
 					} else {
-						e.printStackTrace();
+						notifyPrivatePreJellyBean(b, c);
+					}
+				} else {
+					if (Integer.valueOf(android.os.Build.VERSION.SDK_INT) >= 16) {
+						notifyJellyBean(b, c);
+					} else {
+						notifyPreJellyBean(b, c);
 					}
 				}
-			}, false);				  
+			}
+//			ParseHelper.getDeviceNick(c, new FindCallback() {
+//				@Override
+//				public void done(List<ParseObject> r, ParseException e) {						
+//					if (e == null) {
+//						if (!sender.equals(r.get(0).get("DeviceNick"))) {
+//							if (type.equals("private")) {
+//								if (Integer.valueOf(android.os.Build.VERSION.SDK_INT) >= 16) {
+//									notifyPrivateJellyBean(b, c);
+//								} else {
+//									notifyPrivatePreJellyBean(b, c);
+//								}
+//							} else {
+//								if (Integer.valueOf(android.os.Build.VERSION.SDK_INT) >= 16) {
+//									notifyJellyBean(b, c);
+//								} else {
+//									notifyPreJellyBean(b, c);
+//								}
+//							}
+//						}
+//					} else {
+//						e.printStackTrace();
+//					}
+//				}
+//			}, false);				  
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	private void notifyPreJellyBean(Bundle b, Context c) {
 		String message = b.getString("message");
-		String time = b.getString("time");
 		String sender = b.getString("sender");
 		
 		int icon = R.drawable.ic_launcher;
@@ -104,9 +111,9 @@ public class ChatReceiver extends BroadcastReceiver {
 		mNotificationManager.notify(HELLO_ID, notification);			
 	}
 	
+	@SuppressWarnings("deprecation")
 	private void notifyPrivatePreJellyBean(Bundle b, Context c) {
 		String message = b.getString("message");
-		String time = b.getString("time");
 		String sender = b.getString("sender");
 		
 		int icon = R.drawable.ic_launcher;
@@ -136,7 +143,6 @@ public class ChatReceiver extends BroadcastReceiver {
 			if (message.length() > 25) {
 				messageShort = b.getString("message").substring(0, 24);
 			}
-			String time = b.getString("time");
 			String sender = b.getString("sender");
 			
 		    Intent notiIntent = new Intent(c, ChatMainActivity.class);
@@ -167,7 +173,6 @@ public class ChatReceiver extends BroadcastReceiver {
 			if (message.length() > 25) {
 				messageShort = b.getString("message").substring(0, 24);
 			}
-			String time = b.getString("time");
 			String sender = b.getString("sender");
 			
 		    Intent notiIntent = new Intent(c, ChatMainActivity.class);
@@ -183,7 +188,7 @@ public class ChatReceiver extends BroadcastReceiver {
 //			b.putInt("channel", parseChannel(datas.get("channel")));
 //			unSubIntent.putExtras(b);
 			
-			PendingIntent pSendIntent = PendingIntent.getActivity(c, 0, sendIntent, 0);
+//			PendingIntent pSendIntent = PendingIntent.getActivity(c, 0, sendIntent, 0);
 			PendingIntent pIntent = PendingIntent.getActivity(c, 0, notiIntent, 0);
 //			PendingIntent pUnSubIntent = PendingIntent.getActivity(c, 0, unSubIntent, 0);
 

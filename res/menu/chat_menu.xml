@@ -1,0 +1,17 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/menu_settings"
+        android:showAsAction="always" 
+        android:icon="@drawable/settings"/>
+
+    <item
+        android:id="@+id/menu_sign_out"
+        android:showAsAction="always"
+        android:icon="@drawable/sign_out" />
+    
+    <item
+        android:id="@+id/menu_users"
+        android:showAsAction="always" 
+        android:icon="@drawable/users"/>    
+</menu>

@@ -1,16 +1,21 @@
-<?xml version="1.0" encoding="utf-8" standalone="no"?>
 <resources>
-    <string name="updates">-Updated Parse SDK, hopefully fixes latency issue with chats.\n-Updated profile management, includes easier device nickname management, and new avatar uploads.\n-Stability fixes for multiple bugs.\n-Updates to improve UI fluidity.\n-Improve signout function.\n-Etc...</string>
-    <string name="app_name">Hax Chat</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="login">Login</string>
-    <string name="menu_settings">Settings</string>
-    <string name="title_activity_chat_main">ChatMainActivity</string>
-    <string name="menu_sign_out">Sign Out</string>
-    <!--  -->
+    <string name="updates">-Revamped entire application.\n-Backwards compatible back to Gingerbread!\n-Uses the awesome SlidingMenu opensource library in multiple places.\n-Huge UI updates across the board.\n-Bug fixes for multiple app craches.\n-Backend updates allowing for User profile image uploads.\n-Broke Private chat for the moment, will be added back soon.</string>    
+    <string name="app_name">HaxChat</string>
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in_register"><b>Sign in</b> or register.</string>
+    <string name="action_sign_in_short">Sign in.</string>
+    <string name="menu_forgot_password">Recover lost password.</string>
+    <string name="login_progress_signing_in">Signing in&#8230;</string>
+    <string name="error_invalid_email">This email address is invalid. Must be a valid Gmail address.</string>
+    <string name="error_invalid_password">This password is too short. Must be at least four (4) characters.</string>
+    <string name="error_incorrect_password">This password is incorrect.</string>
+    <string name="error_field_required">This field is required.</string>
+    
     <!-- Preferences -->
     <!--  -->
     <string name="preferences_title">Preferences</string>
+    <string name="preferences_reset_pass">Reset Password</string>
     <!-- UI -->
     <string name="preferences_interface_title">Interface</string>
     <!-- General -->

@@ -1,69 +1,103 @@
 package com.t3hh4xx0r.haxchat.preferences;
 
-import android.annotation.TargetApi;
-import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Build;
+import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
-import android.preference.CheckBoxPreference;
-import android.preference.Preference;
-import android.preference.PreferenceFragment;
-import android.preference.PreferenceScreen;
+import android.preference.PreferenceManager;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 
+import com.actionbarsherlock.view.MenuItem;
+import com.slidingmenu.lib.SlidingMenu;
+import com.slidingmenu.lib.app.SlidingFragmentActivity;
 import com.t3hh4xx0r.haxchat.R;
 import com.t3hh4xx0r.haxchat.parse.ParseHelper;
 
-@TargetApi(Build.VERSION_CODES.HONEYCOMB)
-public class PushFragment extends PreferenceFragment {
+public class PushFragment extends SlidingFragmentActivity {
+    public static final String ENABLE_TEST_PUSH = "com.t3hh4xx0r.haxchat.push_enable_test"; 
+    public static final String ENABLE_UPDATES_PUSH = "com.t3hh4xx0r.haxchat.push_enable_updates"; 
+    public static final String ENABLE_OTHER_PUSH = "com.t3hh4xx0r.haxchat.push_enable_other"; 
+    SharedPreferences prefs;
+    Editor editor;
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.push_prefs);
+		prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		editor = prefs.edit();
+		setupMenu();
+		setCurrentValues();
+		
+		CheckBox otherPush = (CheckBox) findViewById(R.id.push_other_checkbox);
+		otherPush.setOnCheckedChangeListener(new OnCheckedChangeListener() {			
+			@Override
+			public void onCheckedChanged(CompoundButton v, boolean b) {
+				editor.putBoolean(ENABLE_OTHER_PUSH, b).apply();
+				ParseHelper.registerForPush(v.getContext());
+			}
+		});
+		CheckBox testPush = (CheckBox) findViewById(R.id.push_test_checkbox);
+		testPush.setOnCheckedChangeListener(new OnCheckedChangeListener() {			
+			@Override
+			public void onCheckedChanged(CompoundButton v, boolean b) {
+				editor.putBoolean(ENABLE_TEST_PUSH, b).apply();
+				ParseHelper.registerForPush(v.getContext());
+			}
+		});
+		CheckBox updatePush = (CheckBox) findViewById(R.id.push_updates_checkbox);
+		updatePush.setOnCheckedChangeListener(new OnCheckedChangeListener() {			
+			@Override
+			public void onCheckedChanged(CompoundButton v, boolean b) {
+				editor.putBoolean(ENABLE_UPDATES_PUSH, b).apply();
+				ParseHelper.registerForPush(v.getContext());
+			}
+		});		
+	}
 	
-	    SharedPreferences sharedPrefs;
-	    SharedPreferences.Editor editor;
-	    PreferenceScreen prefs;
-
-	    public static final String ENABLE_TEST_PUSH = "com.t3hh4xx0r.haxchat.push_enable_test"; 
-	    public static final String ENABLE_UPDATES_PUSH = "com.t3hh4xx0r.haxchat.push_enable_updates"; 
-	    public static final String ENABLE_OTHER_PUSH = "com.t3hh4xx0r.haxchat.push_enable_other"; 
-
-	   @Override
-	   public void onCreate(Bundle savedInstanceState) {
-	        super.onCreate(savedInstanceState);
-	        addPreferencesFromResource(R.xml.push_frag);
-	        
-	        sharedPrefs = this.getActivity().getSharedPreferences(PreferencesProvider.PREFERENCES_KEY, Context.MODE_PRIVATE);
-	        prefs = getPreferenceScreen();
-	        editor = sharedPrefs.edit();
-	      	editor.putBoolean(PreferencesProvider.PREFERENCES_CHANGED, true);
-	      	editor.commit();	        
-	      		      	
-	      	setCurrentValues();
-	   }
-
 	private void setCurrentValues() {
-		CheckBoxPreference enableOther = (CheckBoxPreference) prefs.findPreference(ENABLE_OTHER_PUSH);
-		enableOther.setChecked(sharedPrefs.getBoolean(ENABLE_OTHER_PUSH, true));
+		CheckBox otherPush = (CheckBox) findViewById(R.id.push_other_checkbox);
+		otherPush.setChecked(prefs.getBoolean(ENABLE_OTHER_PUSH, true));
 		
-		CheckBoxPreference enableTest = (CheckBoxPreference) prefs.findPreference(ENABLE_TEST_PUSH);
-		enableTest.setChecked(sharedPrefs.getBoolean(ENABLE_TEST_PUSH, false));
+		CheckBox testPush = (CheckBox) findViewById(R.id.push_test_checkbox);
+		testPush.setChecked(prefs.getBoolean(ENABLE_TEST_PUSH, false));
 		
-		CheckBoxPreference enableUpdates = (CheckBoxPreference) prefs.findPreference(ENABLE_UPDATES_PUSH);
-		enableUpdates.setChecked(sharedPrefs.getBoolean(ENABLE_UPDATES_PUSH, true));		
+		CheckBox updatePush = (CheckBox) findViewById(R.id.push_updates_checkbox);
+		updatePush.setChecked(prefs.getBoolean(ENABLE_UPDATES_PUSH, true));		
 	}
-
-	public boolean onPreferenceTreeClick(PreferenceScreen screen, Preference preference) {
-		String key = preference.getKey();
-		if (key.equals(ENABLE_OTHER_PUSH) ||
-				key.equals(ENABLE_TEST_PUSH) ||
-				key.equals(ENABLE_UPDATES_PUSH)) {
-			boolean value = ((CheckBoxPreference)preference).isChecked();
-			editor.putBoolean(key, value).apply();
-			ParseHelper.registerForPush(this.getActivity());
-		} 
-		return false;
-	}
-		
+	
 	@Override
 	public void onResume(){
 		super.onResume();
       	setCurrentValues();
+	}
+	
+	void setupMenu() {
+		SlidingMenu sm = getSlidingMenu();
+		setBehindContentView(R.layout.chats_list_menu);
+		sm.setShadowWidthRes(R.dimen.shadow_width);
+		sm.setShadowDrawable(R.drawable.shadow);
+		sm.setBehindOffsetRes(R.dimen.slidingmenu_offset);
+		sm.setFadeDegree(0.35f);
+		sm.setTouchModeAbove(SlidingMenu.TOUCHMODE_FULLSCREEN);
+		sm.setMode(SlidingMenu.LEFT);
+		
+		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+		getSupportFragmentManager()
+		.beginTransaction()
+		.replace(R.id.menu_frame_right, new PreferencesMenuFragment(this))
+		.commit();			
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+			case android.R.id.home: 
+				toggle();
+				break;
+		}
+		return true;		
 	}
 }

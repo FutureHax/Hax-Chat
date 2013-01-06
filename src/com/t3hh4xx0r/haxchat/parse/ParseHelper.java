@@ -3,17 +3,14 @@ package com.t3hh4xx0r.haxchat.parse;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.TimeZone;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.text.TextUtils;
 import android.widget.Toast;
 
 import com.parse.FindCallback;
@@ -49,7 +46,6 @@ public 	class ParseHelper {
 			PushService.subscribe(c.getApplicationContext(), "", LoginActivity.class);
 		} else {
 			PushService.unsubscribe(c.getApplicationContext(), "");
-			
 		}
 		
 		if (PreferencesProvider.Push.getPushChannels(c)[1]) {
@@ -57,7 +53,6 @@ public 	class ParseHelper {
 		} else {
 			PushService.unsubscribe(c.getApplicationContext(), "testing");
 		}
-		
 		
 		if (PreferencesProvider.Push.getPushChannels(c)[2]) {
     		PushService.subscribe(c.getApplicationContext(), "updates", LoginActivity.class);
@@ -69,11 +64,6 @@ public 	class ParseHelper {
 				ParseUser.getCurrentUser().getUsername() !=null) {
 			subscribePrivateChat(c);
 		}
-	}	
-	
-	public void updateLastActive(ParseUser u, long time) {
-		u.put("lastActive", time);
-		u.saveEventually();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -85,6 +75,7 @@ public 	class ParseHelper {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static void addUserFriend(ParseUser user, final Context c) {
 		Object o = ParseUser.getCurrentUser().get("friendsList");
 		if (!(o instanceof ArrayList<?>)) {
@@ -103,7 +94,8 @@ public 	class ParseHelper {
 				ParseUser.getCurrentUser().refreshInBackground(new RefreshCallback() {
 					@Override
 					public void done(ParseObject arg0, ParseException arg1) {
-						DBAdapter db = new DBAdapter(c).open();;
+						DBAdapter db = new DBAdapter(c);
+						db.open(true);
 						db.putFriendsList(ParseUser.getCurrentUser().getUsername(), getUsersFriends());
 						db.close();									
 					}
@@ -111,19 +103,11 @@ public 	class ParseHelper {
 			}
 		}); 
 	}
-
-	public static void getDeviceNick(ParseUser u, Context c, FindCallback cb, boolean dumpCacheFirst) {
-		ParseQuery q = new ParseQuery("Device");
-		if (dumpCacheFirst) {
-			q.clearCachedResult();
-		}
-		q.whereEqualTo("DeviceID", PreferencesProvider.id(c));
-		q.whereEqualTo("UserId", ParseUser.getCurrentUser().getObjectId());
-		q.findInBackground(cb);
+	
+	public static String getDeviceNick(Context c) {
+		return PreferencesProvider.deviceNick(c);
 	}
-	
-
-	
+		
 	public static boolean isUserAFriend(ParseUser u, Context c) {
 		if (getCachedUsersFriends(c).contains(u.getUsername())) {
 			return true;
@@ -134,9 +118,10 @@ public 	class ParseHelper {
 	
 	//Maybe not necessary
 	public static ArrayList<String> getCachedUsersFriends(Context c) {	
-		DBAdapter db = new DBAdapter(c).open();
+		DBAdapter db = new DBAdapter(c);
+		db.open(false);
 		ArrayList<String> res = db.getFriendsList();
-		db.close();		
+		db.close();	
 		return res;
 	}
 	
@@ -148,14 +133,18 @@ public 	class ParseHelper {
 		ParseUser.getCurrentUser().refreshInBackground(null);
 	}
 
-	public static void updateUser(Map<String, Object> opts) {
-		ParseUser u = ParseUser.getCurrentUser();
-		for (Map.Entry<String, Object> entry: opts.entrySet()) {
-			u.put(entry.getKey(), entry.getValue());
-		}
-		u.saveInBackground();
-		
-	}
+//	@TargetApi(Build.VERSION_CODES.GINGERBREAD)
+//	public static void updateUser(Map<String, Object> opts, Context c) {		
+//		ParseUser.getCurrentUser();
+//		UserUpdateManager updateMan = new UserUpdateManager(c);
+//		updateMan.up
+////		synchronized (u) {
+////			for (Map.Entry<String, Object> entry: opts.entrySet()) {
+////				u.put(entry.getKey(), entry.getValue());
+////			}
+////			u.saveInBackground();
+////		}
+//	}
  
 	public static void getUserByEmail(String s, FindCallback cb){
 		ParseQuery userQuery = ParseUser.getQuery();
@@ -170,76 +159,99 @@ public 	class ParseHelper {
 	}
 	
 	public static void sendPrivateMessage(final String message, final String time, final String user, Context c) {
-		ParseHelper.getDeviceNick(ParseUser.getCurrentUser(), c, new FindCallback() {
-			@Override
-			public void done(List<ParseObject> r, com.parse.ParseException e) {
-				String name = ParseUser.getCurrentUser().getUsername();
-				if (e == null) {
-					name = r.get(0).getString("DeviceNick");
-				}
-				JSONObject data;
-				try {
-					data = new JSONObject("{\"action\": \""+ACTION_CHAT+"\"," +
-							"\"sender\": \""+name+"\"," +
-							"\"time\": \""+time+"\"," +
-							"\"type\": \"private\"," +
-							"\"message\": \""+message+"\"" +
-							"}");
-					ParsePush push = new ParsePush();
-			        push.setChannel("chat_"+user);
-			        push.setData(data);	
-			        push.sendInBackground();
-				} catch (JSONException e1) {
-					e1.printStackTrace();
-				}
-			}
-		}, false);
-		
-        try {
-        	Map<String, Object> opts = new HashMap<String, Object>();
-        	opts.put("lastActive", getDateInGMT());
-			ParseHelper.updateUser(opts);
-		} catch (java.text.ParseException e) {
-			e.printStackTrace();
+//		ParseHelper.getDeviceNick(c, new FindCallback() {
+//			@Override
+//			public void done(List<ParseObject> r, com.parse.ParseException e) {
+//				String name = ParseUser.getCurrentUser().getUsername();
+//				if (e == null) {
+//					name = r.get(0).getString("DeviceNick");
+//				}
+//				JSONObject data;
+//				try {
+//					data = new JSONObject("{\"action\": \""+ACTION_CHAT+"\"," +
+//							"\"sender\": \""+name+"\"," +
+//							"\"time\": \""+time+"\"," +
+//							"\"type\": \"private\"," +
+//							"\"message\": \""+message+"\"" +
+//							"}");
+//					ParsePush push = new ParsePush();
+//			        push.setChannel("chat_"+user);
+//			        push.setData(data);	
+//			        push.sendInBackground();
+//				} catch (JSONException e1) {
+//					e1.printStackTrace();
+//				}
+//			}
+//		}, false);
+		if (TextUtils.isEmpty(message)) {
+			return;
 		}
+		String name = PreferencesProvider.deviceNick(c);
+		JSONObject data;
+		try {
+			data = new JSONObject("{\"action\": \""+ACTION_CHAT+"\"," +
+					"\"sender\": \""+name+"\"," +
+					"\"time\": \""+time+"\"," +
+					"\"type\": \"private\"," +
+					"\"message\": \""+message+"\"" +
+					"}");
+			ParsePush push = new ParsePush();
+	        push.setChannel("chat_"+user);
+	        push.setData(data);	
+	        push.sendInBackground();
+		} catch (JSONException e1) {
+			e1.printStackTrace();
+		}
+        
 	}
 	
 	public static void sendMessage(final String message, final String time, Context c) throws JSONException {
-		ParseHelper.getDeviceNick(ParseUser.getCurrentUser(), c, new FindCallback() {
-			@Override
-			public void done(List<ParseObject> r, com.parse.ParseException e) {
-				String name = ParseUser.getCurrentUser().getUsername();
-				if (e == null) {
-					name = r.get(0).getString("DeviceNick");
-				}
-				JSONObject data;
-				try {
-					data = new JSONObject("{\"action\": \""+ACTION_CHAT+"\"," +
-							"\"sender\": \""+name+"\"," +
-							"\"time\": \""+time+"\"," +
-							"\"type\": \"public\"," +
-							"\"message\": \""+message+"\"" +
-							"}");
-					ParsePush push = new ParsePush();
-			        push.setChannel("chat");
-			        push.setData(data);	
-			        push.sendInBackground();
-				} catch (JSONException e1) {
-					e1.printStackTrace();
-				}
-			}
-		}, false);
-		
-		try {
-			Map<String, Object> opts = new HashMap<String, Object>();
-	    	opts.put("lastActive", getDateInGMT());
-	    	updateUser(opts);
-		} catch (java.text.ParseException e) {
-			e.printStackTrace();
+//		ParseHelper.getDeviceNick(c, new FindCallback() {
+//			@Override
+//			public void done(List<ParseObject> r, com.parse.ParseException e) {
+//				String name = ParseUser.getCurrentUser().getUsername();
+//				if (e == null) {
+//					name = r.get(0).getString("DeviceNick");
+//				}
+//				JSONObject data;
+//				try {
+//					data = new JSONObject("{\"action\": \""+ACTION_CHAT+"\"," +
+//							"\"sender\": \""+name+"\"," +
+//							"\"time\": \""+time+"\"," +
+//							"\"type\": \"public\"," +
+//							"\"message\": \""+message+"\"" +
+//							"}");
+//					ParsePush push = new ParsePush();
+//			        push.setChannel("chat");
+//			        push.setData(data);	
+//			        push.sendInBackground();
+//				} catch (JSONException e1) {
+//					e1.printStackTrace();
+//				}
+//			}
+//		}, false);
+		if (TextUtils.isEmpty(message)) {
+			return;
 		}
+		JSONObject data;
+		try {
+			data = new JSONObject("{\"action\": \""+ACTION_CHAT+"\"," +
+					"\"sender\": \""+PreferencesProvider.deviceNick(c)+"\"," +
+					"\"time\": \""+time+"\"," +
+					"\"type\": \"public\"," +
+					"\"message\": \""+message+"\"" +
+					"}");
+			ParsePush push = new ParsePush();
+	        push.setChannel("chat");
+	        push.setData(data);	
+	        push.sendInBackground();
+		} catch (JSONException e1) {
+			e1.printStackTrace();
+		}
+
 	}
 		
-	private static Date getDateInGMT() throws java.text.ParseException {
+	public static Date getDateInGMT() throws java.text.ParseException {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
 		return (Date) sdf.parse(sdf.format(new Date()));
@@ -266,11 +278,13 @@ public 	class ParseHelper {
 				PushService.unsubscribe(ctx, (String) list[i]);
 			}
 		}
-		DBAdapter d = new DBAdapter(ctx).open();
+		DBAdapter d = new DBAdapter(ctx);
+		d.open(true);
 		d.dropChats();
 		d.close();
-		Intent i = new Intent(ctx, ChatMainActivity.class);
-		ctx.startActivity(i);			
+		Intent i = new Intent(ctx, LoginActivity.class);
+		i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		ctx.startActivity(i);		
 		
 	}
 
