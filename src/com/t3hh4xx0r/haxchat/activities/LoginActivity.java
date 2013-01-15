@@ -2,7 +2,10 @@ package com.t3hh4xx0r.haxchat.activities;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.List;
+import java.util.regex.Pattern;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
@@ -13,6 +16,7 @@ import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Patterns;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnFocusChangeListener;
@@ -48,6 +52,7 @@ public class LoginActivity extends SherlockActivity {
 	private String mEmail;
 	private String mUser;
 	private String mPassword;
+	private String mPossibleEmail;
 
 	// UI references.
 	private EditText mEmailView;
@@ -69,7 +74,17 @@ public class LoginActivity extends SherlockActivity {
 			startChat(this);
 		}
 		// Set up the login form.
+		Pattern emailPattern = Patterns.EMAIL_ADDRESS; // API level 8+
+		Account[] accounts = AccountManager.get(this).getAccounts();
+		for (Account account : accounts) {
+		    if (emailPattern.matcher(account.name).matches()) {
+		    	mPossibleEmail = account.name;
+		    }
+		}
 		mEmailView = (EditText) findViewById(R.id.email);
+		mEmailView.setText(mPossibleEmail);
+		mEmailView = (EditText) findViewById(R.id.email);
+		mEmailView.setText(mPossibleEmail);
 		mEmailView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
 			@Override
 			public boolean onEditorAction(TextView textView, int id,
