@@ -1,5 +1,5 @@
 <resources>
-    <dimen name="slidingmenu_offset">60dp</dimen>
+    <dimen name="slidingmenu_offset">140dp</dimen>
     <dimen name="list_padding">10dp</dimen>
     <dimen name="shadow_width">15dp</dimen>
 </resources>
