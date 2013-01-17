@@ -1,4 +1,5 @@
 package com.t3hh4xx0r.haxchat.activities;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.List;
@@ -191,6 +192,10 @@ public class LoginActivity extends SherlockActivity {
 			mEmailView.setError(getString(R.string.error_invalid_email));
 			focusView = mEmailView;
 			cancel = true;
+		} else if (containsPeriod() == true) {
+			mEmailView.setError(getString(R.string.error_contains_period));
+			focusView = mEmailView;
+			cancel = true;
 		}
 
 		if (cancel) {
@@ -204,6 +209,17 @@ public class LoginActivity extends SherlockActivity {
 			showProgress(true);
 			doRegister();
 		}
+	}
+	
+	private boolean containsPeriod() {
+		boolean b = false;
+		String[] email = mEmail.split("@");
+		if (email[0].contains(".")) {
+			b = true;
+		} else { 
+			return b;
+		}
+		return b;		
 	}
 
 	private void doRegister() {
