@@ -158,6 +158,7 @@ public 	class ParseHelper {
 		userQuery.findInBackground(cb);
 	}
 	
+	
 	public static void sendPrivateMessage(final String message, final String time, final String user, Context c) {
 //		ParseHelper.getDeviceNick(c, new FindCallback() {
 //			@Override

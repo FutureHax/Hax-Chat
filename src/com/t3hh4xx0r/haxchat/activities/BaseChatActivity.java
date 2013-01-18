@@ -2,7 +2,9 @@ package com.t3hh4xx0r.haxchat.activities;
 
 import java.util.ArrayList;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -10,12 +12,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import com.parse.ParseUser;
 import com.slidingmenu.lib.SlidingMenu;
 import com.slidingmenu.lib.app.SlidingFragmentActivity;
 import com.t3hh4xx0r.haxchat.R;
+import com.t3hh4xx0r.haxchat.fragments.ChatsListFragment;
 import com.t3hh4xx0r.haxchat.fragments.UserListFragment;
 import com.t3hh4xx0r.haxchat.parse.ParseHelper;
 
@@ -147,17 +151,11 @@ public class BaseChatActivity extends SlidingFragmentActivity implements
 		sm.setTouchModeAbove(SlidingMenu.TOUCHMODE_FULLSCREEN);
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 		
-//		sm.setMode(SlidingMenu.LEFT_RIGHT);		
-//		getSupportFragmentManager()
-//		.beginTransaction()
-//		.replace(R.id.menu_frame_right, new ChatsListFragment())
-//		.commit();			
-//		getSupportFragmentManager()
-//		.beginTransaction()
-//		.replace(R.id.menu_frame_left, new UserListFragment())
-//		.commit();
-		
-		sm.setMode(SlidingMenu.RIGHT);		
+		sm.setMode(SlidingMenu.LEFT_RIGHT);		
+		getSupportFragmentManager()
+		.beginTransaction()
+		.replace(R.id.menu_frame_right, new ChatsListFragment())
+		.commit();							
 		getSupportFragmentManager()
 		.beginTransaction()
 		.replace(R.id.menu_frame_right, new UserListFragment())
@@ -166,12 +164,32 @@ public class BaseChatActivity extends SlidingFragmentActivity implements
 	}
 
 	@Override
-	public void onChildItemSelected(String id) {
-		Intent detailIntent = new Intent(this, UserProfileActivity.class);
-		Bundle b = new Bundle();
-		b.putString("id", id);
-		detailIntent.putExtras(b);
-		startActivity(detailIntent);
+	public void onChildItemSelected(final String id) {
+		String[] items = {getString(R.string.options_view_user), getString(R.string.options_start_pm)};
+		AlertDialog.Builder options = new AlertDialog.Builder(this);
+		options.setTitle(R.string.options_dialog_title);
+		options.setItems(items, new DialogInterface.OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface d, int which) {
+				// TODO Auto-generated method stub
+				switch (which) {
+				case 0:
+					Intent detailIntent = new Intent(BaseChatActivity.this, UserProfileActivity.class);
+					Bundle b = new Bundle();
+					b.putString("id", id);
+					detailIntent.putExtras(b);
+					startActivity(detailIntent);
+					break;
+				case 1:
+					
+					break;
+				}
+			}
+			
+		});
+		
+		options.create().show();
 	}
 	
 	@Override

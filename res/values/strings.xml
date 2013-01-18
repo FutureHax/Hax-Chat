@@ -13,6 +13,11 @@
     <string name="error_incorrect_password">This password is incorrect.</string>
     <string name="error_field_required">This field is required.</string>
     
+    <!-- Dialog strings -->
+    <string name="options_dialog_title">Options</string>
+    <string name="options_view_user">View user profile.</string>
+    <string name="options_start_pm">Private message user.</string>
+    
     <!-- Preferences -->
     <!--  -->
     <string name="preferences_title">Preferences</string>
