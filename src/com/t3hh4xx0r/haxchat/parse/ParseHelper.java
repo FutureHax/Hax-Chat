@@ -104,7 +104,7 @@ public 	class ParseHelper {
 		}); 
 	}
 	
-	public static String getDeviceNick(Context c) {
+	public static String getDeviceNick(Context c, FindCallback fC, boolean b) {
 		return PreferencesProvider.deviceNick(c);
 	}
 		

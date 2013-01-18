@@ -1,5 +1,7 @@
 package com.t3hh4xx0r.haxchat.parse;
 
+import java.util.List;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -13,6 +15,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 
+import com.parse.FindCallback;
+import com.parse.ParseObject;
 import com.t3hh4xx0r.haxchat.DBAdapter;
 import com.t3hh4xx0r.haxchat.R;
 import com.t3hh4xx0r.haxchat.activities.ChatMainActivity;
@@ -45,7 +49,7 @@ public class ChatReceiver extends BroadcastReceiver {
 			b.putString("time", time);
 			intent.putExtras(b);
 			c.sendOrderedBroadcast(intent, null);
-			if (!sender.equals(ParseHelper.getDeviceNick(c))) {
+			if (!sender.equals(ParseHelper.getDeviceNick(c, null, false))) {
 				if (type.equals("private")) {
 					if (Integer.valueOf(android.os.Build.VERSION.SDK_INT) >= 16) {
 						notifyPrivateJellyBean(b, c);
@@ -60,30 +64,30 @@ public class ChatReceiver extends BroadcastReceiver {
 					}
 				}
 			}
-//			ParseHelper.getDeviceNick(c, new FindCallback() {
-//				@Override
-//				public void done(List<ParseObject> r, ParseException e) {						
-//					if (e == null) {
-//						if (!sender.equals(r.get(0).get("DeviceNick"))) {
-//							if (type.equals("private")) {
-//								if (Integer.valueOf(android.os.Build.VERSION.SDK_INT) >= 16) {
-//									notifyPrivateJellyBean(b, c);
-//								} else {
-//									notifyPrivatePreJellyBean(b, c);
-//								}
-//							} else {
-//								if (Integer.valueOf(android.os.Build.VERSION.SDK_INT) >= 16) {
-//									notifyJellyBean(b, c);
-//								} else {
-//									notifyPreJellyBean(b, c);
-//								}
-//							}
-//						}
-//					} else {
-//						e.printStackTrace();
-//					}
-//				}
-//			}, false);				  
+			ParseHelper.getDeviceNick(c, new FindCallback() {
+				@Override
+				public void done(List<ParseObject> r, com.parse.ParseException e) {						
+					if (e == null) {
+						if (!sender.equals(r.get(0).get("DeviceNick"))) {
+							if (type.equals("private")) {
+								if (Integer.valueOf(android.os.Build.VERSION.SDK_INT) >= 16) {
+									notifyPrivateJellyBean(b, c);
+								} else {
+									notifyPrivatePreJellyBean(b, c);
+								}
+							} else {
+								if (Integer.valueOf(android.os.Build.VERSION.SDK_INT) >= 16) {
+									notifyJellyBean(b, c);
+								} else {
+									notifyPreJellyBean(b, c);
+								}
+							}
+						}
+					} else {
+						e.printStackTrace();
+					}
+				}
+			}, false);				  
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}

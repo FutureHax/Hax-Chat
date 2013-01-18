@@ -3,6 +3,7 @@ package com.t3hh4xx0r.haxchat.activities;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.json.JSONException;
 
@@ -21,6 +22,8 @@ import android.widget.ListView;
 
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
+import com.parse.FindCallback;
+import com.parse.ParseObject;
 import com.parse.ParseUser;
 import com.t3hh4xx0r.haxchat.ChangeLogDialog;
 import com.t3hh4xx0r.haxchat.DBAdapter;
@@ -131,19 +134,19 @@ public class ChatMainActivity extends BaseChatActivity {
 
     private void setActivityTitle() {
         user = ParseUser.getCurrentUser();
-//        try {
-//        	ParseHelper.getDeviceNick(this, new FindCallback() {						
-//    			@Override
-//    			public void done(List<ParseObject> r, com.parse.ParseException e) {
-//    				if (e == null && r.size() == 1) {
-//    					ParseObject device = r.get(0);
-//    					ChatMainActivity.this.setTitle("Public Chat - "+device.getString("DeviceNick"));
-//    				}
-//    			}						
-//    		}, false);	
-//        } catch (Exception e) {
-//        	
-//        }		
+        try {
+        	ParseHelper.getDeviceNick(this, new FindCallback() {						
+    			@Override
+    			public void done(List<ParseObject> r, com.parse.ParseException e) {
+    				if (e == null && r.size() == 1) {
+    					ParseObject device = r.get(0);
+    					ChatMainActivity.this.setTitle("Public Chat - "+device.getString("DeviceNick"));
+    				}
+    			}						
+    		}, false);	
+        } catch (Exception e) {
+        	
+        }		
 	}
 
 	@Override

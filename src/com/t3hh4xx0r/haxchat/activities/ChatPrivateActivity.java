@@ -3,6 +3,7 @@ package com.t3hh4xx0r.haxchat.activities;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.List;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -16,9 +17,12 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
+import com.parse.FindCallback;
+import com.parse.ParseObject;
 import com.parse.ParseUser;
 import com.t3hh4xx0r.haxchat.DBAdapter;
 import com.t3hh4xx0r.haxchat.R;
@@ -50,18 +54,18 @@ public class ChatPrivateActivity extends BaseChatActivity {
 		
 		currentUser = ParseUser.getCurrentUser();
 		currentUserNick = PreferencesProvider.deviceNick(this);
-//		ParseHelper.getDeviceNick(this, new FindCallback() {			
-//			@Override
-//			public void done(List<ParseObject> r, com.parse.ParseException e) {
-//				if (e == null) {
-//					currentUserNick = r.get(0).getString("DeviceNick");
-//					setup();
-//				} else {
-//					Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_SHORT).show();
-//					e.printStackTrace();
-//				}
-//			}
-//		}, false);
+		ParseHelper.getDeviceNick(this, new FindCallback() {			
+			@Override
+			public void done(List<ParseObject> r, com.parse.ParseException e) {
+				if (e == null) {
+					currentUserNick = r.get(0).getString("DeviceNick");
+					setup();
+				} else {
+					Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_SHORT).show();
+					e.printStackTrace();
+				}
+			}
+		}, false);
 		setup();
 	}
 	
@@ -72,7 +76,7 @@ public class ChatPrivateActivity extends BaseChatActivity {
 	    lv1.setStackFromBottom(true);
 	    lv1.setDivider(new ColorDrawable(getResources().getColor(android.R.color.transparent)));
 	    lv1.setDividerHeight(5);
-	    chattingUserNick = getIntent().getStringExtra("user");
+	    chattingUserNick = getIntent().getStringExtra("reciever");
 	    chatList = getChatListFromUser(this, chattingUserNick);
 	    a = new ChatMainActivity.ChatListAdapter(this, chatList);
 	    lv1.setAdapter(a);

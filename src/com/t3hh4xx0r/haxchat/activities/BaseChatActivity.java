@@ -12,7 +12,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import com.parse.ParseUser;
@@ -154,11 +153,11 @@ public class BaseChatActivity extends SlidingFragmentActivity implements
 		sm.setMode(SlidingMenu.LEFT_RIGHT);		
 		getSupportFragmentManager()
 		.beginTransaction()
-		.replace(R.id.menu_frame_right, new ChatsListFragment())
+		.replace(R.id.menu_frame_left, new UserListFragment())
 		.commit();							
 		getSupportFragmentManager()
 		.beginTransaction()
-		.replace(R.id.menu_frame_right, new UserListFragment())
+		.replace(R.id.menu_frame_right, new ChatsListFragment())
 		.commit();			
 		
 	}
@@ -182,7 +181,12 @@ public class BaseChatActivity extends SlidingFragmentActivity implements
 					startActivity(detailIntent);
 					break;
 				case 1:
-					
+					Intent pmIntent = new Intent(BaseChatActivity.this, ChatPrivateActivity.class);
+					Bundle pb = new Bundle();
+					pb.putString("user", ParseHelper.getDeviceNick(BaseChatActivity.this, null, false));
+					pb.putString("reciever", id);
+					pmIntent.putExtras(pb);
+					startActivity(pmIntent);
 					break;
 				}
 			}
