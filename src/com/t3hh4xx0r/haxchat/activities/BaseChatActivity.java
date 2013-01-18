@@ -6,7 +6,11 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import com.actionbarsherlock.app.ActionBar;
 import com.parse.ParseUser;
 import com.slidingmenu.lib.SlidingMenu;
 import com.slidingmenu.lib.app.SlidingFragmentActivity;
@@ -27,6 +32,8 @@ public class BaseChatActivity extends SlidingFragmentActivity implements
 
 	private String mTitleRes;
 	protected Fragment mFrag;
+    SharedPreferences prefs;
+    Editor editor;
 
 	public BaseChatActivity(String titleRes) {
 		mTitleRes = titleRes;
@@ -128,6 +135,19 @@ public class BaseChatActivity extends SlidingFragmentActivity implements
 		}
 	}
 	
+	public int getColor() {
+		prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		int i = prefs.getInt("theme_color", android.R.color.holo_blue_bright);
+		return i;
+	}
+	
+	public void setColor(int i) {
+		prefs = PreferenceManager.getDefaultSharedPreferences(BaseChatActivity.this);
+		editor = prefs.edit();
+		editor.putInt("theme_color", i).apply();
+	}
+	
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -136,7 +156,10 @@ public class BaseChatActivity extends SlidingFragmentActivity implements
 		if (user == null) {
 			Intent i = new Intent(this, LoginActivity.class);
 			startActivityForResult(i, 0);
-		} 
+		}
+		
+		ActionBar ab = getSupportActionBar();
+		ab.setBackgroundDrawable(new ColorDrawable(getColor()));
 		
 		setTitle(mTitleRes);
 		SlidingMenu sm = getSlidingMenu();

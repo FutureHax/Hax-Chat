@@ -19,10 +19,18 @@ public class PreferencesActivity extends Activity {
 		LinearLayout gen = (LinearLayout) findViewById(R.id.general_prefs);
 		LinearLayout push = (LinearLayout) findViewById(R.id.push_prefs);
 		LinearLayout alerts = (LinearLayout) findViewById(R.id.alert_prefs);
+		LinearLayout ui = (LinearLayout) findViewById(R.id.ui_prefs);		
 		gen.setOnClickListener(new OnClickListener() {			
 			@Override
 			public void onClick(View v) {
 				Intent i = new Intent(v.getContext(), GeneralFragment.class);
+				startActivity(i);
+			}
+		});
+		ui.setOnClickListener(new OnClickListener() {			
+			@Override
+			public void onClick(View v) {
+				Intent i = new Intent(v.getContext(), UIFragment.class);
 				startActivity(i);
 			}
 		});

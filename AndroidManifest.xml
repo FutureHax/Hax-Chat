@@ -46,7 +46,10 @@
         </activity>                 
         <activity
             android:name="com.t3hh4xx0r.haxchat.preferences.GeneralFragment">
-        </activity> 
+        </activity>
+        <activity
+            android:name="com.t3hh4xx0r.haxchat.preferences.UIFragment">
+        </activity>  
         <activity
             android:name="com.t3hh4xx0r.haxchat.preferences.AlertFragment">
         </activity>                 
